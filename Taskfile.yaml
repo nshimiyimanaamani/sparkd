@@ -9,7 +9,7 @@ tasks:
     desc: "Builds the firecracker-land binary"
     cmds:
       - echo "Building firecracker-land binary..."
-      - go build --tags netgo --ldflags '-s -w -extldflags "-lm -lstdc++ -static"' -o bin *.go
+      - go build --tags netgo --ldflags '-s -w -extldflags "-lm -lstdc++ -static"' -o bin cmd/spark/main.go
       - echo "Done!"
   run:
     desc: "Runs the firecracker-land binary"

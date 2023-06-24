@@ -1,4 +1,4 @@
-package main
+package vmms
 
 import (
 	"fmt"
@@ -7,21 +7,32 @@ import (
 
 	firecracker "github.com/firecracker-microvm/firecracker-go-sdk"
 	"github.com/firecracker-microvm/firecracker-go-sdk/client/models"
+	"github.com/iradukunda1/firecrackerland/internal/core"
+	"github.com/iradukunda1/firecrackerland/internal/rand"
 	log "github.com/sirupsen/logrus"
 )
 
-func getOptions(id byte, req CreateRequest) options {
+type Options core.Config
+
+var parent_dir = "$HOME/sparkd/"
+
+func (o *Options) GenerateOpt(id byte, image, name string) (*Options, error) {
+
+	fmt.Println("generating options", id)
+
 	fc_ip := net.IPv4(172, 102, 0, id).String()
 	gateway_ip := "172.102.0.1"
 	mask_long := "255.255.255.0"
 	bootArgs := "ro console=ttyS0 noapic reboot=k panic=1 earlycon pci=off init=init nomodules random.trust_cpu=on tsc=reliable quiet "
 	bootArgs = bootArgs + fmt.Sprintf("ip=%s::%s:%s::eth0:off", fc_ip, gateway_ip, mask_long)
-	return options{
+
+	out := &Options{
+		Id:             rand.UUID(),
 		VmIndex:        int64(id),
 		FcBinary:       "firecracker",
-		FcKernelImage:  "vmlinux.bin", // make sure that this file exists in the current directory with valid sum5
+		FcKernelImage:  parent_dir + "vmlinux.bin", // make sure that this file exists in the current directory with valid sum5
 		KernelBootArgs: bootArgs,
-		ProvidedImage:  req.DockerImage,
+		ProvidedImage:  image,
 		TapMacAddr:     fmt.Sprintf("02:FC:00:00:00:%02x", id),
 		Tap:            fmt.Sprintf("fc-tap-%d", id),
 		FcIP:           fc_ip,
@@ -31,9 +42,17 @@ func getOptions(id byte, req CreateRequest) options {
 		FcMemSz:    256,
 		Logger:     log.New(),
 	}
+
+	roots, err := o.generateRFs(name)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate rootfs image, %s", err)
+	}
+	out.RootFsImage = roots
+
+	return out, nil
 }
 
-func (opts *options) getConfig() firecracker.Config {
+func (opts *Options) getFcConfig() firecracker.Config {
 
 	return firecracker.Config{
 		VMID:            opts.Id,
@@ -41,7 +60,7 @@ func (opts *options) getConfig() firecracker.Config {
 		KernelImagePath: opts.FcKernelImage,
 		KernelArgs:      opts.KernelBootArgs,
 		LogLevel:        "debug",
-		InitrdPath:      "initrd.cpio",
+		InitrdPath:      parent_dir + "initrd.cpio",
 		Drives: []models.Drive{
 			{
 				DriveID:      firecracker.String("1"),
@@ -70,6 +89,7 @@ func (opts *options) getConfig() firecracker.Config {
 		},
 
 		JailerCfg: &firecracker.JailerConfig{
+			ID:             opts.Id,
 			UID:            firecracker.Int(1),
 			GID:            firecracker.Int(1),
 			NumaNode:       firecracker.Int(0),
@@ -81,7 +101,7 @@ func (opts *options) getConfig() firecracker.Config {
 			Stdout:         opts.Logger.WithField("vmm_stream", "stdout").WriterLevel(log.DebugLevel),
 			Stderr:         opts.Logger.WithField("vmm_stream", "stderr").WriterLevel(log.DebugLevel),
 			Stdin:          os.Stdin,
-			ChrootStrategy: firecracker.NewNaiveChrootStrategy("vmlinux.bin"),
+			ChrootStrategy: firecracker.NewNaiveChrootStrategy(parent_dir + "vmlinux.bin"),
 		},
 		//VsockDevices:      vsocks,
 		//LogFifo:           opts.FcLogFifo,

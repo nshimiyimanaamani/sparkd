@@ -1,42 +1,37 @@
-package main
+package vmms
 
 import (
 	"context"
 	"fmt"
-	"time"
 
 	firecracker "github.com/firecracker-microvm/firecracker-go-sdk"
+	"github.com/iradukunda1/firecrackerland/internal/cmd"
+	"github.com/iradukunda1/firecrackerland/internal/core"
+	"github.com/iradukunda1/firecrackerland/internal/render"
 	log "github.com/sirupsen/logrus"
 )
 
-var duration = 120 * time.Second
-
 // CreateVmm is responsible to create vm and return its ip address
-func (o *options) createVMM(ctx context.Context, id string) (*Firecracker, error) {
+func (o *Options) Create(ctx context.Context) (*core.Firecracker, error) {
 
-	llg := log.New()
+	llg := render.GetLogger(ctx)
 
-	cfg := o.getConfig()
-
-	// client := firecracker.NewClient(fcCfg.SocketPath, llg.WithContext(vmmCtx), true)
+	cfg := o.getFcConfig()
 
 	machineOpts := []firecracker.Opt{
 		firecracker.WithLogger(log.NewEntry(llg)),
 	}
 
-	cfg.VMID = id
-	cfg.JailerCfg.ID = id
-
-	if err := exposeBlockDeviceToJail(o.RootFsImage, *cfg.JailerCfg.UID, *cfg.JailerCfg.GID); err != nil {
+	if err := cmd.ExposeToJail(o.RootFsImage, *cfg.JailerCfg.UID, *cfg.JailerCfg.GID); err != nil {
 		return nil, fmt.Errorf("failed to expose fs to jail: %v", err)
 	}
 
 	// remove old socket path if it exists
-	if _, err := RunNoneSudo(fmt.Sprintf("rm -f %s > /dev/null || true", o.ApiSocket)); err != nil {
+	if _, err := cmd.RunNoneSudo(fmt.Sprintf("rm -f %s > /dev/null || true", o.ApiSocket)); err != nil {
 		return nil, fmt.Errorf("failed to delete old socket path: %s", err)
 	}
 
-	if err := o.SetNetwork(); err != nil {
+	if err := o.setNetwork(); err != nil {
 		return nil, fmt.Errorf("failed to set network: %s", err)
 	}
 
@@ -47,12 +42,13 @@ func (o *options) createVMM(ctx context.Context, id string) (*Firecracker, error
 
 	installSignalHandlers(ctx, m)
 
-	res := &Firecracker{
-		ctx:  ctx,
+	res := &core.Firecracker{
+		Id:   m.Cfg.VMID,
+		Ctx:  ctx,
 		Name: o.ProvidedImage,
 		// cancelCtx: nil,
-		vm:    m,
-		state: StateCreated,
+		Vm:    m,
+		State: core.StateCreated,
 	}
 
 	return res, nil

@@ -1,4 +1,4 @@
-package main
+package rand
 
 import (
 	"crypto/rand"
@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-func uuid() string {
+func UUID() string {
 
 	b := make([]byte, 16)
 	_, err := rand.Read(b)

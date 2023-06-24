@@ -7,8 +7,11 @@ import (
 	"os/signal"
 
 	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
+	mddl "github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
+	"github.com/iradukunda1/firecrackerland/handlers/api"
+	"github.com/iradukunda1/firecrackerland/handlers/middleware"
+	"github.com/iradukunda1/firecrackerland/internal/services/vmms"
 	lgg "github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 )
@@ -25,9 +28,9 @@ func main() {
 
 	r := chi.NewMux()
 	r.Use(corsHandler)
-	r.Use(middleware.Recoverer)
-	r.Use(includeLogger(lg))
-	r.Mount("/api", handler())
+	r.Use(mddl.Recoverer)
+	r.Use(middleware.SetLoggerCtx(lg))
+	r.Mount("/api", api.Handler())
 
 	lg.Infof("Listening on port 8080")
 
@@ -50,7 +53,7 @@ func main() {
 
 	// for killing all running VMs
 	defer func() {
-		Cleanup()
+		vmms.Cleanup()
 		cancel()
 	}()
 
@@ -66,22 +69,6 @@ func main() {
 
 	if err := g.Wait(); err != nil {
 		lg.Fatal("main: runtime program terminated")
-	}
-}
-
-// include context with logger in http server for downstream use
-func includeLogger(lg *lgg.Logger) Middleware {
-
-	return func(next http.Handler) http.Handler {
-
-		f := func(w http.ResponseWriter, r *http.Request) {
-
-			r = r.WithContext(ctxSetLogger(r.Context(), lg))
-
-			next.ServeHTTP(w, r)
-		}
-
-		return http.HandlerFunc(f)
 	}
 }
 

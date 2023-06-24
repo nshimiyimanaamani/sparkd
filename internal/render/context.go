@@ -1,4 +1,4 @@
-package main
+package render
 
 import (
 	"context"
@@ -13,11 +13,11 @@ const (
 )
 
 // set logger into context
-func ctxSetLogger(ctx context.Context, logger *lgg.Logger) context.Context {
+func SetLogger(ctx context.Context, logger *lgg.Logger) context.Context {
 	return context.WithValue(ctx, loggerKey, logger)
 }
 
 // get logger from context
-func ctxGetLogger(ctx context.Context) *lgg.Logger {
+func GetLogger(ctx context.Context) *lgg.Logger {
 	return ctx.Value(loggerKey).(*lgg.Logger)
 }
