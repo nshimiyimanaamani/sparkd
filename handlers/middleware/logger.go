@@ -3,7 +3,7 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/iradukunda1/firecrackerland/internal/render"
+	"github.com/quarksgroup/sparkd/internal/render"
 	lgg "github.com/sirupsen/logrus"
 )
 

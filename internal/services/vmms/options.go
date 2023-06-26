@@ -7,8 +7,8 @@ import (
 
 	firecracker "github.com/firecracker-microvm/firecracker-go-sdk"
 	"github.com/firecracker-microvm/firecracker-go-sdk/client/models"
-	"github.com/iradukunda1/firecrackerland/internal/core"
-	"github.com/iradukunda1/firecrackerland/internal/rand"
+	"github.com/quarksgroup/sparkd/internal/core"
+	"github.com/quarksgroup/sparkd/internal/rand"
 	log "github.com/sirupsen/logrus"
 )
 

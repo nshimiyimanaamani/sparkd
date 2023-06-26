@@ -6,9 +6,9 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/iradukunda1/firecrackerland/internal/core"
-	"github.com/iradukunda1/firecrackerland/internal/render"
-	"github.com/iradukunda1/firecrackerland/internal/services/vmms"
+	"github.com/quarksgroup/sparkd/internal/core"
+	"github.com/quarksgroup/sparkd/internal/render"
+	"github.com/quarksgroup/sparkd/internal/services/vmms"
 )
 
 // Create handler is for creating new vm instance

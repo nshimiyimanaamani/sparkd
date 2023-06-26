@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/iradukunda1/firecrackerland/internal/core"
+	"github.com/quarksgroup/sparkd/internal/core"
 )
 
 // StartVm is responsible to start vm

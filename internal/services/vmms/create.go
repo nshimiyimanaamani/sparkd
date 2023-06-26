@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	firecracker "github.com/firecracker-microvm/firecracker-go-sdk"
-	"github.com/iradukunda1/firecrackerland/internal/cmd"
-	"github.com/iradukunda1/firecrackerland/internal/core"
-	"github.com/iradukunda1/firecrackerland/internal/render"
+	"github.com/quarksgroup/sparkd/internal/cmd"
+	"github.com/quarksgroup/sparkd/internal/core"
+	"github.com/quarksgroup/sparkd/internal/render"
 	log "github.com/sirupsen/logrus"
 )
 

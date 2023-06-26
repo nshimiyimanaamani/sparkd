@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/iradukunda1/firecrackerland/internal/cmd"
+	"github.com/quarksgroup/sparkd/internal/cmd"
 )
 
 // generateRFs generates root filesystem for the VM according to the below steps:

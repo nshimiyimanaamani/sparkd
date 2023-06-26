@@ -9,9 +9,9 @@ import (
 	"github.com/go-chi/chi"
 	mddl "github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
-	"github.com/iradukunda1/firecrackerland/handlers/api"
-	"github.com/iradukunda1/firecrackerland/handlers/middleware"
-	"github.com/iradukunda1/firecrackerland/internal/services/vmms"
+	"github.com/quarksgroup/sparkd/handlers/api"
+	"github.com/quarksgroup/sparkd/handlers/middleware"
+	"github.com/quarksgroup/sparkd/internal/services/vmms"
 	lgg "github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 )

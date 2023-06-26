@@ -11,9 +11,9 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/iradukunda1/firecrackerland/cmd/initrd/netsettings"
+	"github.com/quarksgroup/sparkd/cmd/initrd/netsettings"
 
-	"github.com/iradukunda1/firecrackerland/cmd/initrd/mmds"
+	"github.com/quarksgroup/sparkd/cmd/initrd/mmds"
 )
 
 // This will get run as init in the initramfs (and be the only binary in there)

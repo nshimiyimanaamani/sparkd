@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/iradukunda1/firecrackerland/internal/core"
-	"github.com/iradukunda1/firecrackerland/internal/render"
+	"github.com/quarksgroup/sparkd/internal/core"
+	"github.com/quarksgroup/sparkd/internal/render"
 )
 
 // For getting all running vms

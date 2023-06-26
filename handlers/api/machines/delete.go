@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
-	"github.com/iradukunda1/firecrackerland/internal/core"
-	"github.com/iradukunda1/firecrackerland/internal/render"
+	"github.com/quarksgroup/sparkd/internal/core"
+	"github.com/quarksgroup/sparkd/internal/render"
 )
 
 // for deleting supplied vm id

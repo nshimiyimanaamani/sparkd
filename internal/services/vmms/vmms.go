@@ -9,7 +9,7 @@ import (
 	"time"
 
 	firecracker "github.com/firecracker-microvm/firecracker-go-sdk"
-	"github.com/iradukunda1/firecrackerland/internal/core"
+	"github.com/quarksgroup/sparkd/internal/core"
 	llg "github.com/sirupsen/logrus"
 )
 

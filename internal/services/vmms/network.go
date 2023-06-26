@@ -3,7 +3,7 @@ package vmms
 import (
 	"fmt"
 
-	"github.com/iradukunda1/firecrackerland/internal/cmd"
+	"github.com/quarksgroup/sparkd/internal/cmd"
 )
 
 func (o *Options) setNetwork() error {

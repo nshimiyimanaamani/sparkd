@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
-	"github.com/iradukunda1/firecrackerland/handlers/api/machines"
+	"github.com/quarksgroup/sparkd/handlers/api/machines"
 )
 
 func Handler() http.Handler {
