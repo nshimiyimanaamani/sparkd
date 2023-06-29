@@ -21,7 +21,7 @@ func (o *Options) GenerateOpt(id byte, image, name string) (*Options, error) {
 	fc_ip := net.IPv4(172, 102, 0, id).String()
 	gateway_ip := "172.102.0.1"
 	mask_long := "255.255.255.0"
-	bootArgs := "ro console=ttyS0 noapic reboot=k panic=1 earlycon pci=off init=init nomodules random.trust_cpu=on tsc=reliable quiet "
+	bootArgs := "ro console=ttyS0 noapic reboot=k panic=1 earlycon pci=off init=init nomodules random.trust_cpu=on tsc=reliable i8042.noaux i8042.nomux i8042.nopnp i8042.dumbkbd "
 	bootArgs = bootArgs + fmt.Sprintf("ip=%s::%s:%s::eth0:off", fc_ip, gateway_ip, mask_long)
 
 	out := &Options{
