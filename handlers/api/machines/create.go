@@ -1,9 +1,7 @@
 package machines
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 
 	"github.com/quarksgroup/sparkd/internal/core"
@@ -20,16 +18,13 @@ func Create() http.HandlerFunc {
 
 		IpByte := core.IpByte + 1
 
-		body, err := io.ReadAll(r.Body)
-		if err != nil {
-			log.Fatalf("failed to read body, %s", err)
-		}
-		defer r.Body.Close()
+		core.IpByte = IpByte
 
 		in := new(CreateRequest)
 
-		if err := json.Unmarshal([]byte(body), in); err != nil {
+		if err := render.DecodeJSON(r, &in); err != nil {
 			log.Fatalf("error during reading passed request body: %v", err.Error())
+			return
 		}
 
 		opt := vmms.Options(core.Config{})
@@ -53,24 +48,24 @@ func Create() http.HandlerFunc {
 			Agent:  m.Agent,
 		}
 
-		// response, err := json.Marshal(&resp)
-		// if err != nil {
-		// 	log.Fatalf("failed to marshal json, %s", err)
-		// }
-		// w.Header().Add("Content-Type", "application/json")
-		// w.Write(response)
-
 		render.JSON(w, resp, http.StatusOK)
 
-		m, err = opts.Start(m)
-		if err != nil {
-			fmt.Printf("failed to start vm, %s", err)
-			return
-		}
+		out := make(chan *core.Firecracker)
+
+		go func() error {
+			res, err := opts.Start(m)
+			if err != nil {
+				fmt.Printf("failed to start and create vm %v", err)
+				return err
+			}
+			out <- res
+			return nil
+		}()
+
+		m = <-out
 
 		core.RunVms[m.Id] = m
 
-		return
 	}
 
 }

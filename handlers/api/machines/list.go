@@ -1,7 +1,6 @@
 package machines
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/quarksgroup/sparkd/internal/core"
@@ -12,13 +11,14 @@ import (
 func List() http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		log := render.GetLogger(r.Context())
 
-		var resp []CreateResponse = make([]CreateResponse, 0)
+		// log := render.GetLogger(r.Context())
+
+		out := make([]CreateResponse, 0)
 
 		for _, v := range core.RunVms {
 			pid, _ := v.Vm.PID()
-			resp = append(resp, CreateResponse{
+			out = append(out, CreateResponse{
 				Name:   v.Name,
 				State:  string(v.State),
 				IpAddr: string(v.Vm.Cfg.MmdsAddress),
@@ -27,10 +27,6 @@ func List() http.HandlerFunc {
 			})
 		}
 
-		response, err := json.Marshal(&resp)
-		if err != nil {
-			log.Fatalf("failed to marshal json, %s", err)
-		}
-		render.JSON(w, response, http.StatusOK)
+		render.JSON(w, out, http.StatusOK)
 	}
 }

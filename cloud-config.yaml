@@ -14,15 +14,13 @@ runcmd:
   - source export GOROOT=/usr/local/go
   - source export GOPATH=$HOME/go
   - source export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-  # - curl --proto ''=https'' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-  # - source $HOME/.cargo/env
   - apt install -y build-essential
   - sudo apt install rustc -y
   - git clone https://github.com/firecracker-microvm/firecracker
   - ARCH="$(uname -m)"
-  - sudo ./firecracker/tools/devtool build
+  - sudo ./firecracker/tools/devtool --unattended build
   - sudo cp ./firecracker/build/cargo_target/${ARCH}-unknown-linux-musl/debug/firecracker /usr/bin
   - sudo cp ./firecracker/build/cargo_target/${ARCH}-unknown-linux-musl/debug/jailer /usr/bin
   - sh -c "$(curl -ssL https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
-  - 'git clone https://github.com/quarksgroup/sparkd'
+  - git clone https://github.com/quarksgroup/sparkd
   - task all -d sparkd

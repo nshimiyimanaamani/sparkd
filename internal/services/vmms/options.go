@@ -14,11 +14,9 @@ import (
 
 type Options core.Config
 
-var parent_dir = "$HOME/sparkd/"
+var parent_dir = "/sparkd/"
 
 func (o *Options) GenerateOpt(id byte, image, name string) (*Options, error) {
-
-	fmt.Println("generating options", id)
 
 	fc_ip := net.IPv4(172, 102, 0, id).String()
 	gateway_ip := "172.102.0.1"
@@ -43,7 +41,7 @@ func (o *Options) GenerateOpt(id byte, image, name string) (*Options, error) {
 		Logger:     log.New(),
 	}
 
-	roots, err := o.generateRFs(name)
+	roots, err := out.generateRFs(name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate rootfs image, %s", err)
 	}
@@ -88,10 +86,16 @@ func (opts *Options) getFcConfig() firecracker.Config {
 			MemSizeMib: firecracker.Int64(256),
 		},
 
+		// Enable seccomp as recommended by firecracker-doc
+		Seccomp: firecracker.SeccompConfig{
+			Enabled: true,
+		},
+
+		// Specify the jailer configuration options
 		JailerCfg: &firecracker.JailerConfig{
 			ID:             opts.Id,
-			UID:            firecracker.Int(1),
-			GID:            firecracker.Int(1),
+			UID:            firecracker.Int(int(opts.VmIndex)), // Make that uid and gid are same and unique for each vm in order to provide an extra layer of security for their individually owned
+			GID:            firecracker.Int(int(opts.VmIndex)),
 			NumaNode:       firecracker.Int(0),
 			Daemonize:      true,
 			ExecFile:       "/usr/bin/" + opts.FcBinary,

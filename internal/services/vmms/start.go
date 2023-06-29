@@ -19,10 +19,13 @@ func (*Options) Start(m *core.Firecracker) (*core.Firecracker, error) {
 
 		return m, fmt.Errorf("failed to start machine: %v", err)
 	}
-	defer m.Vm.StopVMM()
+	// defer m.Vm.StopVMM()
+
+	InstallSignalHandlers(ctx, m)
 
 	go func() {
-		m.Vm.Wait(ctx)
+		defer m.CancelCtx()
+		m.Vm.Wait(context.Background())
 	}()
 
 	m.State = core.StateStarted

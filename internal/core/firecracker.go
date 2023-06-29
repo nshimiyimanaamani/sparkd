@@ -17,10 +17,11 @@ type VmState string
 
 // avaliable vmState kind status
 const (
+	StateRunning VmState = "running"
 	StateCreated VmState = "created"
 	StateStarted VmState = "started"
 	StateFailed  VmState = "failed"
-	// StatePending VmState = "pending"
+	StateStopped VmState = "stopped"
 )
 
 type Firecracker struct {
