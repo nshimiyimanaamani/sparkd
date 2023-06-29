@@ -81,10 +81,6 @@ func (opts *Options) getFcConfig() firecracker.Config {
 
 		ForwardSignals: []os.Signal{
 			os.Interrupt,
-			// syscall.SIGQUIT,
-			// syscall.SIGTERM,
-			// syscall.SIGHUP,
-			// syscall.SIGABRT,
 		},
 
 		//for specifying the number of cpus and memory

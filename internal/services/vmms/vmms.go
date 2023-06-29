@@ -63,24 +63,14 @@ func installSignalHandlers(ctx context.Context, m *firecracker.Machine) {
 		for {
 			switch s := <-c; {
 			case s == syscall.SIGTERM || s == os.Interrupt:
-				fmt.Println("Caught SIGTERM, requesting clean shutdown")
+				log.Printf("Caught signal: %s, requesting clean shutdown", s.String())
 				if err := m.Shutdown(ctx); err != nil {
-					log.Errorf("Machine shutdown failed with error: %v", err)
-				}
-				time.Sleep(20 * time.Second)
-
-				// There's no direct way of checking if a VM is running, so we test if we can send it another shutdown
-				// request. If that fails, the VM is still running and we need to kill it.
-				if err := m.Shutdown(ctx); err == nil {
-					fmt.Println("Timeout exceeded, forcing shutdown") // TODO: Proper logging
-					if err := m.StopVMM(); err != nil {
-						log.Errorf("VMM stop failed with error: %v", err)
-					}
+					log.Errorf("An error occurred while shutting down Firecracker VM: %v", err)
 				}
 			case s == syscall.SIGQUIT:
-				fmt.Println("Caught SIGQUIT, forcing shutdown")
+				log.Printf("Caught signal: %s, forcing shutdown", s.String())
 				if err := m.StopVMM(); err != nil {
-					log.Errorf("VMM stop failed with error: %v", err)
+					log.Errorf("An error occurred while stopping Firecracker VMM: %v", err)
 				}
 			}
 		}
