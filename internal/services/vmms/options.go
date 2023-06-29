@@ -14,7 +14,7 @@ import (
 
 type Options core.Config
 
-var parent_dir = "/home/dedsec/Documents/sparkd-forked"
+var parent_dir = "/sparkd/"
 
 func (o *Options) GenerateOpt(id byte, image, name string) (*Options, error) {
 
