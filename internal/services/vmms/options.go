@@ -87,7 +87,7 @@ func (opts *Options) getFcConfig() firecracker.Config {
 		MachineCfg: models.MachineConfiguration{
 			VcpuCount:  firecracker.Int64(1),
 			Smt:        firecracker.Bool(false),
-			MemSizeMib: firecracker.Int64(256),
+			MemSizeMib: firecracker.Int64(1024),
 		},
 
 		// Enable seccomp as recommended by firecracker-doc

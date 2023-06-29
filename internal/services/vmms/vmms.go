@@ -10,6 +10,7 @@ import (
 	"time"
 
 	firecracker "github.com/firecracker-microvm/firecracker-go-sdk"
+	"github.com/quarksgroup/sparkd/internal/cmd"
 	"github.com/quarksgroup/sparkd/internal/core"
 	llg "github.com/sirupsen/logrus"
 )
@@ -81,6 +82,7 @@ func Cleanup() {
 	for _, run := range core.RunVms {
 		run.Vm.StopVMM()
 	}
+	cmd.RunNoneSudo("rm -f *.ext4")
 }
 
 type defaultFc struct {
