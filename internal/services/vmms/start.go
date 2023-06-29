@@ -21,9 +21,9 @@ func (*Options) Start(m *core.Firecracker) (*core.Firecracker, error) {
 	}
 	// defer m.Vm.StopVMM()
 
-	if v := InstallSignalHandlers(ctx, m); <-v {
-		fmt.Println("signal received")
-	}
+	// if v := InstallSignalHandlers(ctx, m); <-v {
+	// 	fmt.Println("signal received")
+	// }
 
 	go func() {
 		defer m.CancelCtx()
