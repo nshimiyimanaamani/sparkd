@@ -43,6 +43,12 @@ task gen-init && task gen-initrd
    task run
 ```
 
+6. Run this command to setting up and run project:
+
+```
+   task all
+```
+
 The application will start running on `localhost:8080`.
 
 ## Available Endpoints
@@ -52,24 +58,39 @@ The following endpoints are available for interacting with the application:
 * `/api/create`: This endpoint is used to create a new VM. It expects the location or name of you docker container image as input and name.
 * `/api/delete`: This endpoint is used to delete a VM. It requires the VM ID to be provided as the request body.
 
-1. Create a VM using `/api/create`:
+1. Create a VM using `/api/machines`:
 
    ```
 
-   curl -X POST -H "Content-Type: application/json" -d '{"docker-image": "Docker container name","name":"my-hello-vm"}' http://localhost:8080/api/create
+   curl -X POST -H "Content-Type: application/json" -d '{"image": "Docker container name","name":"my-hello-vm"}' http://localhost:8080/api/machines
 
    ```
 
    Replace `/path/to/rootfs.img` with the actual path to the rootfs image you want to use.
-2. Delete a VM using `/api/delete`:
+2. Delete a VM using `/api/machines/{vm_id}`:
 
-   ```
+```
 
-   curl -X POST -H "Content-Type: application/json" -d '{"id": "uuid-generated"}' http://localhost:8080/api/delete
+   curl -X DELETE -H "Content-Type: application/json" http://localhost:8080/api/machines/{vm_id}
 
-   ```
+```
 
-Replace `uuid-generated` with the ID of the VM you want to delete.
+3. List a VMS using `/api/machines/list`:
+
+```
+
+   curl -X GET -H "Content-Type: application/json" http://localhost:8080/api/machines/list
+
+```
+
+
+4. Find a VM using `/api/machines/{vm_id}`:
+
+```
+
+   curl -X GET -H "Content-Type: application/json" http://localhost:8080/api/machines/{vm_id}
+
+```
 
 Please note that you need to have the server running (task run) before executing these curl commands. Make sure to replace localhost:8080 with the appropriate host and port if you are running the server on a different location.
 
