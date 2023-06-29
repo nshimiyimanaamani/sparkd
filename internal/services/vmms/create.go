@@ -39,7 +39,7 @@ func (o *Options) Create(ctx context.Context) (*core.Firecracker, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed creating machine: %v", err)
 	}
-	fmt.Println(m.Cfg.SocketPath)
+
 	res := &core.Firecracker{
 		Id:   m.Cfg.VMID,
 		Ctx:  ctx,

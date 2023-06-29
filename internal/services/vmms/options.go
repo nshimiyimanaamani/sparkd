@@ -14,14 +14,14 @@ import (
 
 type Options core.Config
 
-var parent_dir = "/sparkd/"
+var parent_dir = "/home/dedsec/Documents/sparkd-forked"
 
 func (o *Options) GenerateOpt(id byte, image, name string) (*Options, error) {
 
 	fc_ip := net.IPv4(172, 102, 0, id).String()
 	gateway_ip := "172.102.0.1"
 	mask_long := "255.255.255.0"
-	bootArgs := "ro console=ttyS0 noapic reboot=k panic=1 earlycon pci=off init=init nomodules random.trust_cpu=on tsc=reliable i8042.noaux i8042.nomux i8042.nopnp i8042.dumbkbd quite"
+	bootArgs := "ro console=ttyS0 noapic reboot=k panic=1 earlycon pci=off init=init nomodules random.trust_cpu=on tsc=reliable quiet "
 	bootArgs = bootArgs + fmt.Sprintf("ip=%s::%s:%s::eth0:off", fc_ip, gateway_ip, mask_long)
 
 	out := &Options{
@@ -34,7 +34,7 @@ func (o *Options) GenerateOpt(id byte, image, name string) (*Options, error) {
 		TapMacAddr:     fmt.Sprintf("02:FC:00:00:00:%02x", id),
 		Tap:            fmt.Sprintf("fc-tap-%d", id),
 		FcIP:           fc_ip,
-		BackBone:       "enp0s25", // eth0 or enp7s0,enp0s25
+		BackBone:       "dev", // eth0 or enp7s0,enp0s25
 		// ApiSocket:      fmt.Sprintf("/tmp/firecracker-%d.sock", id),
 		FcCPUCount: 1,
 		FcMemSz:    256,
@@ -79,6 +79,14 @@ func (opts *Options) getFcConfig() firecracker.Config {
 			},
 		},
 
+		ForwardSignals: []os.Signal{
+			os.Interrupt,
+			// syscall.SIGQUIT,
+			// syscall.SIGTERM,
+			// syscall.SIGHUP,
+			// syscall.SIGABRT,
+		},
+
 		//for specifying the number of cpus and memory
 		MachineCfg: models.MachineConfiguration{
 			VcpuCount:  firecracker.Int64(1),
@@ -95,7 +103,7 @@ func (opts *Options) getFcConfig() firecracker.Config {
 		JailerCfg: &firecracker.JailerConfig{
 			ID:             opts.Id,
 			UID:            firecracker.Int(int(opts.VmIndex)), // Make that uid and gid are same and unique for each vm in order to provide an extra layer of security for their individually owned
-			GID:            firecracker.Int(int(opts.VmIndex)),
+			GID:            firecracker.Int(int(opts.VmIndex) + 1),
 			NumaNode:       firecracker.Int(0),
 			Daemonize:      true,
 			ExecFile:       "/usr/bin/" + opts.FcBinary,
