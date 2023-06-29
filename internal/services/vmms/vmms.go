@@ -31,8 +31,10 @@ func InstallSignalHandlers(ctx context.Context, m *core.Firecracker) chan bool {
 	go func() {
 		// Clear selected default handlers installed by the firecracker SDK:
 		signal.Reset(os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT)
+		fmt.Println("Caught SIGTERM, requesting clean reset")
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+		fmt.Println("Caught SIGTERM, requesting clean notification")
 		for {
 			dfc := defaultFc{
 				vm: m,
