@@ -18,8 +18,10 @@ func (o *Options) Create(ctx context.Context) (*core.Firecracker, error) {
 
 	cfg := o.getFcConfig()
 
+	// logger := logging.NewFileLogger("/path/to/firecracker.log", logging.Debug)
 	machineOpts := []firecracker.Opt{
 		firecracker.WithLogger(log.NewEntry(llg)),
+		// firecracker.WithLogger(o.Logger.WithField("app-id", o.Id)),
 	}
 
 	if err := cmd.ExposeToJail(o.RootFsImage, *cfg.JailerCfg.UID, *cfg.JailerCfg.GID); err != nil {
@@ -41,9 +43,10 @@ func (o *Options) Create(ctx context.Context) (*core.Firecracker, error) {
 	}
 
 	res := &core.Firecracker{
-		Id:   m.Cfg.VMID,
-		Ctx:  ctx,
-		Name: o.ProvidedImage,
+		Id:         m.Cfg.VMID,
+		SocketPath: m.Cfg.SocketPath,
+		Ctx:        ctx,
+		Name:       o.ProvidedImage,
 		// cancelCtx: nil,
 		Vm:    m,
 		State: core.StateCreated,

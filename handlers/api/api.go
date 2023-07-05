@@ -12,11 +12,14 @@ func Handler() http.Handler {
 
 	r.Route("/machines", func(r chi.Router) {
 		r.Post("/", machines.Create())
-		r.Get("/{vm_id}", machines.Find())
-		r.Put("/{vm_id}", machines.Stop())
 		r.Get("/list", machines.List())
 		r.Post("/resume", machines.Resume())
-		r.Delete("/{vm_id}", machines.Delete())
+		r.Route("/{vm_id}", func(r chi.Router) {
+			r.Get("/", machines.Find())
+			r.Put("/", machines.Stop())
+			r.Delete("/", machines.Delete())
+			r.Get("/config", machines.Config())
+		})
 	})
 
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {

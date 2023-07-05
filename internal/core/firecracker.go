@@ -25,11 +25,12 @@ const (
 )
 
 type Firecracker struct {
-	Id        string
-	Name      string
-	Ctx       context.Context
-	CancelCtx context.CancelFunc
-	Vm        *firecracker.Machine
-	State     VmState
-	Agent     net.IP
+	Id         string
+	Name       string
+	SocketPath string
+	Ctx        context.Context
+	CancelCtx  context.CancelFunc
+	Vm         *firecracker.Machine
+	State      VmState
+	Agent      net.IP
 }

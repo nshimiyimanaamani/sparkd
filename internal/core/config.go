@@ -22,10 +22,10 @@ type Config struct {
 	FcIP           string `long:"fc-ip" description:"IP address of the VM"`
 
 	BackBone      string `long:"if-name" description:"if name to match your main ethernet adapter,the one that accesses the Internet - check 'ip addr' or 'ifconfig' if you don't know which one to use"` // eg eth0
-	InitBaseTar   string `long:"init-base-tar" description:"init-base-tar is our init base image file"`                                                                                                   // make sure that this file is currently exists in the current directory by running task extract-init-base-tar
 	ProvidedImage string `long:"provided-image" description:"provided-image is the image that we want to run in the VM"`
 	InitdPath     string `long:"initd-path" description:"initd-path is the path to the init binary file"`
 	Logger        *llg.Logger
+	LogFile       string `long:"log-file" description:"log-file is the path to the log file"`
 }
 
 // JailerConfig represents Jailerspecific configuration options.

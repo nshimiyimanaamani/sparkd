@@ -11,7 +11,7 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/quarksgroup/sparkd/handlers/api"
 	"github.com/quarksgroup/sparkd/handlers/middleware"
-	"github.com/quarksgroup/sparkd/internal/services/vmms"
+	"github.com/quarksgroup/sparkd/internal/services/firecracker/vmms"
 	lgg "github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 )

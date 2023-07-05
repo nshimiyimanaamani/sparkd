@@ -21,18 +21,18 @@ func (*Options) Start(m *core.Firecracker) (*core.Firecracker, error) {
 
 		return m, fmt.Errorf("failed to start machine: %v", err)
 	}
-	defer func() {
-		if err := m.Vm.StopVMM(); err != nil {
-			log.Errorf("An error occurred while stopping Firecracker VMM: %v", err)
-		}
-	}()
+	// defer func() {
+	// 	if err := m.Vm.StopVMM(); err != nil {
+	// 		log.Errorf("An error occurred while stopping Firecracker VMM: %v", err)
+	// 	}
+	// }()
 
 	installSignalHandlers(ctx, m.Vm)
 
-	go func() {
-		defer m.CancelCtx()
-		m.Vm.Wait(context.Background())
-	}()
+	// go func() {
+	// 	defer m.CancelCtx()
+	m.Vm.Wait(context.Background())
+	// }()
 
 	// if err := m.Vm.Wait(context.Background()); err != nil {
 	// 	return nil, fmt.Errorf("wait returned an error %s", err)

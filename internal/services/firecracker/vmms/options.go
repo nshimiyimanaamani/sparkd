@@ -14,7 +14,7 @@ import (
 
 type Options core.Config
 
-var parent_dir = "/sparkd-forked/"
+var parent_dir = "/sparkd/"
 
 func (o *Options) GenerateOpt(id byte, image, name string) (*Options, error) {
 
@@ -47,6 +47,14 @@ func (o *Options) GenerateOpt(id byte, image, name string) (*Options, error) {
 	}
 	out.RootFsImage = roots
 
+	// //create log file
+	// _, err = cmd.RunNoneSudo(fmt.Sprintf("touch %d-%s.log", out.VmIndex, name))
+	// if err != nil {
+	// 	return nil, fmt.Errorf("failed to create log file, %s", err)
+	// }
+
+	// out.LogFile = fmt.Sprintf("%s%d-%s.log", parent_dir, out.VmIndex, name)
+
 	return out, nil
 }
 
@@ -57,7 +65,7 @@ func (opts *Options) getFcConfig() firecracker.Config {
 		SocketPath:      opts.ApiSocket,
 		KernelImagePath: opts.FcKernelImage,
 		KernelArgs:      opts.KernelBootArgs,
-		LogLevel:        "debug",
+		LogLevel:        "Debug",
 		InitrdPath:      parent_dir + "initrd.cpio",
 		Drives: []models.Drive{
 			{
@@ -111,9 +119,8 @@ func (opts *Options) getFcConfig() firecracker.Config {
 			Stdin:          os.Stdin,
 			ChrootStrategy: firecracker.NewNaiveChrootStrategy(parent_dir + "vmlinux.bin"),
 		},
+		// LogPath: opts.LogFile,
 		//VsockDevices:      vsocks,
-		//LogFifo:           opts.FcLogFifo,
-		//LogLevel:          opts.FcLogLevel,
 		//MetricsFifo:       opts.FcMetricsFifo,
 		//FifoLogWriter:     fifo,
 	}

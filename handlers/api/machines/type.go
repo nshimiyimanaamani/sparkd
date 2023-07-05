@@ -8,12 +8,14 @@ type CreateRequest struct {
 }
 
 type CreateResponse struct {
-	ID     string `json:"id,omitempty"`
-	PID    int64  `json:"pid,omitempty"`
-	State  string `json:"state,omitempty"`
-	Name   string `json:"name,omitempty"`
-	IpAddr string `json:"ip_address,omitempty"`
-	Agent  net.IP `json:"agent,omitempty"`
+	ID       string `json:"id,omitempty"`
+	PID      int64  `json:"pid,omitempty"`
+	State    string `json:"state,omitempty"`
+	Name     string `json:"name,omitempty"`
+	IpAddr   string `json:"ip_address,omitempty"`
+	Agent    net.IP `json:"agent,omitempty"`
+	Instance any    `json:"instance,omitempty"`
+	Resource any    `json:"resource,omitempty"`
 }
 
 type DeleteRequest struct {

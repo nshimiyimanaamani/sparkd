@@ -6,7 +6,7 @@ import (
 
 	"github.com/quarksgroup/sparkd/internal/core"
 	"github.com/quarksgroup/sparkd/internal/render"
-	"github.com/quarksgroup/sparkd/internal/services/vmms"
+	"github.com/quarksgroup/sparkd/internal/services/firecracker/vmms"
 )
 
 // Create handler is for creating new vm instance
@@ -36,8 +36,7 @@ func Create() http.HandlerFunc {
 
 		m, err := opts.Create(r.Context())
 		if err != nil {
-			fmt.Printf("failed to start and create vm %v", err)
-			return
+			log.Printf("failed to start and create vm %v", err)
 		}
 
 		resp := CreateResponse{
