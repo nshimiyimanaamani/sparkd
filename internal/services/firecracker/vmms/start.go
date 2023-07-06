@@ -3,35 +3,35 @@ package vmms
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/quarksgroup/sparkd/internal/core"
 )
 
 // StartVm is responsible to start vm
-func (*Options) Start(m *core.Firecracker) (*core.Firecracker, error) {
+func (*Options) Start(ctx context.Context, m *core.Firecracker) (*core.Firecracker, error) {
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithTimeout(ctx, 500*time.Second)
 	defer cancel()
 
 	log := m.Vm.Logger()
+	now := time.Now().UTC()
 
-	if err := m.Vm.Start(ctx); err != nil {
+	m.UpdatedAt = &now
+
+	if err := m.Vm.Start(context.Background()); err != nil {
 
 		m.State = core.StateFailed
-
 		return m, fmt.Errorf("failed to start machine: %v", err)
 	}
-	// defer func() {
-	// 	if err := m.Vm.StopVMM(); err != nil {
-	// 		log.Errorf("An error occurred while stopping Firecracker VMM: %v", err)
-	// 	}
-	// }()
 
 	installSignalHandlers(ctx, m.Vm)
 
 	// go func() {
 	// 	defer m.CancelCtx()
-	m.Vm.Wait(context.Background())
+	if err := m.Vm.Wait(ctx); err != nil {
+		return nil, fmt.Errorf("wait returned an error %s", err)
+	}
 	// }()
 
 	// if err := m.Vm.Wait(context.Background()); err != nil {

@@ -34,7 +34,7 @@ func (o *Options) GenerateOpt(id byte, image, name string) (*Options, error) {
 		TapMacAddr:     fmt.Sprintf("02:FC:00:00:00:%02x", id),
 		Tap:            fmt.Sprintf("fc-tap-%d", id),
 		FcIP:           fc_ip,
-		BackBone:       "dev", // eth0 or enp7s0,enp0s25
+		BackBone:       "eth0", // eth0 or enp7s0,enp0s25
 		// ApiSocket:      fmt.Sprintf("/tmp/firecracker-%d.sock", id),
 		FcCPUCount: 1,
 		FcMemSz:    256,
@@ -65,7 +65,7 @@ func (opts *Options) getFcConfig() firecracker.Config {
 		SocketPath:      opts.ApiSocket,
 		KernelImagePath: opts.FcKernelImage,
 		KernelArgs:      opts.KernelBootArgs,
-		LogLevel:        "Debug",
+		LogLevel:        "debug",
 		InitrdPath:      parent_dir + "initrd.cpio",
 		Drives: []models.Drive{
 			{

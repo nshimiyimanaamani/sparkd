@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"net"
+	"time"
 
 	"github.com/firecracker-microvm/firecracker-go-sdk"
 )
@@ -33,4 +34,6 @@ type Firecracker struct {
 	Vm         *firecracker.Machine
 	State      VmState
 	Agent      net.IP
+	CreatedAt  *time.Time
+	UpdatedAt  *time.Time
 }

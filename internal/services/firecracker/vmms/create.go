@@ -3,6 +3,7 @@ package vmms
 import (
 	"context"
 	"fmt"
+	"time"
 
 	firecracker "github.com/firecracker-microvm/firecracker-go-sdk"
 	"github.com/quarksgroup/sparkd/internal/cmd"
@@ -42,14 +43,17 @@ func (o *Options) Create(ctx context.Context) (*core.Firecracker, error) {
 		return nil, fmt.Errorf("failed creating machine: %v", err)
 	}
 
+	now := time.Now().UTC()
+
 	res := &core.Firecracker{
 		Id:         m.Cfg.VMID,
 		SocketPath: m.Cfg.SocketPath,
 		Ctx:        ctx,
 		Name:       o.ProvidedImage,
 		// cancelCtx: nil,
-		Vm:    m,
-		State: core.StateCreated,
+		Vm:        m,
+		State:     core.StateCreated,
+		CreatedAt: &now,
 	}
 
 	return res, nil

@@ -1,7 +1,7 @@
 package machines
 
 import (
-	"fmt"
+	"context"
 	"net/http"
 
 	"github.com/quarksgroup/sparkd/internal/core"
@@ -36,35 +36,44 @@ func Create() http.HandlerFunc {
 
 		m, err := opts.Create(r.Context())
 		if err != nil {
-			log.Printf("failed to start and create vm %v", err)
+			log.Printf("failed to create machine %v", err)
+			// return
 		}
 
 		resp := CreateResponse{
-			ID:     m.Id,
-			Name:   in.Name,
-			State:  string(m.State),
-			IpAddr: opts.FcIP,
-			Agent:  m.Agent,
+			ID:         m.Id,
+			SocketPath: m.SocketPath,
+			Name:       in.Name,
+			State:      string(m.State),
+			IpAddr:     opts.FcIP,
+			Agent:      m.Agent,
+			CreatedAt:  m.CreatedAt,
 		}
 
 		render.JSON(w, resp, http.StatusOK)
 
-		out := make(chan *core.Firecracker)
-
-		go func() error {
-			res, err := opts.Start(m)
+		go (func() {
+			m, err := opts.Start(r.Context(), m)
 			if err != nil {
-				fmt.Printf("failed to start and create vm %v", err)
-				return err
+				log.Printf("failed to start created machine vm %v", err)
+				// return err
 			}
-			out <- res
-			return nil
-		}()
-
-		m = <-out
-
-		core.RunVms[m.Id] = m
+			core.RunVms[m.Id] = m
+		})()
 
 	}
 
+}
+
+func submitJob(ctx context.Context, opts *vmms.Options, m *core.Firecracker) {
+
+	log := render.GetLogger(ctx)
+
+	m, err := opts.Start(ctx, m)
+	if err != nil {
+		log.Printf("failed to start created machine vm %v", err)
+		// return err
+	}
+
+	core.RunVms[m.Id] = m
 }
