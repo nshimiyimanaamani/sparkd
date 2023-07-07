@@ -20,9 +20,9 @@ func (o *Options) Create(ctx context.Context) (*core.Firecracker, error) {
 	cfg := o.getFcConfig()
 
 	// logger := logging.NewFileLogger("/path/to/firecracker.log", logging.Debug)
-	machineOpts := []firecracker.Opt{
+	opts := []firecracker.Opt{
+		// firecracker.WithProcessRunner(o.jailerCommand(ctx, cfg.VMID, true)),
 		firecracker.WithLogger(log.NewEntry(llg)),
-		// firecracker.WithLogger(o.Logger.WithField("app-id", o.Id)),
 	}
 
 	if err := cmd.ExposeToJail(o.RootFsImage, *cfg.JailerCfg.UID, *cfg.JailerCfg.GID); err != nil {
@@ -38,9 +38,9 @@ func (o *Options) Create(ctx context.Context) (*core.Firecracker, error) {
 		return nil, fmt.Errorf("failed to set network: %s", err)
 	}
 
-	m, err := firecracker.NewMachine(ctx, cfg, machineOpts...)
+	m, err := firecracker.NewMachine(ctx, cfg, opts...)
 	if err != nil {
-		return nil, fmt.Errorf("failed creating machine: %v", err)
+		return nil, fmt.Errorf("failed to create new machine instance: %w", err)
 	}
 
 	now := time.Now().UTC()
@@ -48,13 +48,17 @@ func (o *Options) Create(ctx context.Context) (*core.Firecracker, error) {
 	res := &core.Firecracker{
 		Id:         m.Cfg.VMID,
 		SocketPath: m.Cfg.SocketPath,
+		Image:      o.ProvidedImage,
+		Name:       o.Name,
 		Ctx:        ctx,
-		Name:       o.ProvidedImage,
-		// cancelCtx: nil,
+		// CancelCtx:  vmCancel,
 		Vm:        m,
+		Agent:     m.Cfg.NetworkInterfaces[0].StaticConfiguration,
 		State:     core.StateCreated,
 		CreatedAt: &now,
 	}
+
+	defer Start(ctx, res)
 
 	return res, nil
 }

@@ -4,24 +4,26 @@ runcmd:
   - apt-get update
   - curl -fsSL https://get.docker.com | sh
   - apt-get install podman -y
-  - >-
-    add-apt-repository ppa:git-core/ppa --yes --update && apt-get install git
-    --yes
+  - echo " " >> /etc/containers/registries.conf
+  - echo "# Allow to use docker.io as default registry" >> /etc/containers/registries.conf
+  - echo "unqualified-search-registries = [\"docker.io\"]" >> /etc/containers/registries.conf
+  - add-apt-repository ppa:git-core/ppa -y --update && apt-get install git -y
   - curl -O https://storage.googleapis.com/golang/go1.20.1.linux-amd64.tar.gz
   - tar -xvf go1.20.1.linux-amd64.tar.gz
-  - sudo cp -r go /usr/local
-  - sudo mv go /root
-  - echo "export GOROOT=/usr/local/go" >> /root/.profile
-  - echo "export GOPATH=$HOME/go" >> /root/.profile
-  - echo "export PATH=$GOPATH/bin:$GOROOT/bin:$PATH" >> /root/.profile
-  - source /root/.profile
+  - cp -r go /usr/local
+  - mv go /root
+  - echo "export GOROOT=/usr/local/go" >> $HOME/.profile
+  - echo "export GOPATH=$HOME/go" >> $HOME/.profile
+  - source $HOME/.profile
+  - echo "export PATH=$GOPATH/bin:$GOROOT/bin:$PATH" >> $HOME/.profile
+  - source $HOME/.profile
   - apt install -y build-essential
-  - sudo apt install rustc -y
+  - apt install rustc -y
   - git clone https://github.com/firecracker-microvm/firecracker
   - ARCH="$(uname -m)"
-  - sudo ./firecracker/tools/devtool --unattended build
-  - sudo cp ./firecracker/build/cargo_target/${ARCH}-unknown-linux-musl/debug/firecracker /usr/bin
-  - sudo cp ./firecracker/build/cargo_target/${ARCH}-unknown-linux-musl/debug/jailer /usr/bin
+  - ./firecracker/tools/devtool --unattended build
+  - cp ./firecracker/build/cargo_target/${ARCH}-unknown-linux-musl/debug/firecracker /usr/bin
+  - cp ./firecracker/build/cargo_target/${ARCH}-unknown-linux-musl/debug/jailer /usr/bin
   - sh -c "$(curl -ssL https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
   - git clone https://github.com/quarksgroup/sparkd.git
   - task all -d sparkd

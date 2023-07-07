@@ -9,39 +9,32 @@ import (
 )
 
 // StartVm is responsible to start vm
-func (*Options) Start(ctx context.Context, m *core.Firecracker) (*core.Firecracker, error) {
+func Start(ctx context.Context, m *core.Firecracker) error {
 
-	ctx, cancel := context.WithTimeout(ctx, 500*time.Second)
+	vmCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	log := m.Vm.Logger()
-	now := time.Now().UTC()
+	core.RunVms[m.Id] = m
 
+	now := time.Now().UTC()
 	m.UpdatedAt = &now
 
-	if err := m.Vm.Start(context.Background()); err != nil {
-
+	if err := m.Vm.Start(vmCtx); err != nil {
 		m.State = core.StateFailed
-		return m, fmt.Errorf("failed to start machine: %v", err)
+		return fmt.Errorf("failed to start machine: %v", err)
 	}
 
-	installSignalHandlers(ctx, m.Vm)
+	installSignalHandlers(vmCtx, m.Vm)
 
-	// go func() {
-	// 	defer m.CancelCtx()
-	if err := m.Vm.Wait(ctx); err != nil {
-		return nil, fmt.Errorf("wait returned an error %s", err)
-	}
-	// }()
+	// go m.Vm.Wait(vmCtx)
 
-	// if err := m.Vm.Wait(context.Background()); err != nil {
-	// 	return nil, fmt.Errorf("wait returned an error %s", err)
-	// }
+	go func() {
+		defer m.CancelCtx()
+		m.Vm.Wait(vmCtx)
+	}()
 
-	log.Printf("Start machine was happy")
-
-	m.State = core.StateStarted
+	m.State = core.StateRunning
 	m.CancelCtx = cancel
 
-	return m, nil
+	return nil
 }

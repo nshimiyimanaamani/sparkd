@@ -63,12 +63,12 @@ func (o *Options) generateRFs(name string) (string, error) {
 	}
 
 	// for extracting the podman supplied tar file to the rootfs directory
-	if _, err := cmd.RunSudo(fmt.Sprintf("tar -xvf %s%s -C %s", parent_dir, imageTar, tmpDir)); err != nil {
+	if _, err := cmd.RunNoneSudo(fmt.Sprintf("tar -xvf %s%s -C %s", parent_dir, imageTar, tmpDir)); err != nil {
 		return "", fmt.Errorf("failed to extract podman supplied tar file: %v", err)
 	}
 
 	// include our init process into ext4 file system exported from podman
-	if _, err := cmd.RunSudo(fmt.Sprintf("cp -r %sinit %s", parent_dir, tmpDir)); err != nil {
+	if _, err := cmd.RunNoneSudo(fmt.Sprintf("cp -r %sinit %s", parent_dir, tmpDir)); err != nil {
 		return "", fmt.Errorf("failed to cp init to tmp dir: %v", err)
 	}
 

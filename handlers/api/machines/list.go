@@ -19,11 +19,14 @@ func List() http.HandlerFunc {
 		for _, v := range core.RunVms {
 			pid, _ := v.Vm.PID()
 			out = append(out, CreateResponse{
-				Name:   v.Name,
-				State:  string(v.State),
-				IpAddr: string(v.Vm.Cfg.MmdsAddress),
-				ID:     v.Vm.Cfg.VMID,
-				PID:    int64(pid),
+				Name:       v.Name,
+				SocketPath: v.SocketPath,
+				State:      string(v.State),
+				IpAddr:     string(v.Vm.Cfg.MmdsAddress),
+				ID:         v.Vm.Cfg.VMID,
+				PID:        int64(pid),
+				CreatedAt:  v.CreatedAt,
+				UpdatedAt:  v.UpdatedAt,
 			})
 		}
 

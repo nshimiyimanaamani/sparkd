@@ -3,6 +3,7 @@ package machines
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/quarksgroup/sparkd/internal/core"
 	"github.com/quarksgroup/sparkd/internal/render"
@@ -34,10 +35,13 @@ func Create() http.HandlerFunc {
 			log.Fatalf("failed to generate option config, %s", err)
 		}
 
-		m, err := opts.Create(r.Context())
+		ctx, cancel := context.WithTimeout(r.Context(), 1000*time.Second)
+		defer cancel()
+
+		m, err := opts.Create(ctx)
 		if err != nil {
 			log.Printf("failed to create machine %v", err)
-			// return
+			return
 		}
 
 		resp := CreateResponse{
@@ -52,28 +56,6 @@ func Create() http.HandlerFunc {
 
 		render.JSON(w, resp, http.StatusOK)
 
-		go (func() {
-			m, err := opts.Start(r.Context(), m)
-			if err != nil {
-				log.Printf("failed to start created machine vm %v", err)
-				// return err
-			}
-			core.RunVms[m.Id] = m
-		})()
-
 	}
 
-}
-
-func submitJob(ctx context.Context, opts *vmms.Options, m *core.Firecracker) {
-
-	log := render.GetLogger(ctx)
-
-	m, err := opts.Start(ctx, m)
-	if err != nil {
-		log.Printf("failed to start created machine vm %v", err)
-		// return err
-	}
-
-	core.RunVms[m.Id] = m
 }

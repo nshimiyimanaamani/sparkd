@@ -8,6 +8,7 @@ import (
 
 type Config struct {
 	Id             string `long:"id" description:"Jailer VMM id"`
+	Name           string `long:"name" description:"VM name this is provided by the user"`
 	VmIndex        int64  `long:"vm-index" description:"VM index"`
 	ApiSocket      string `long:"socket-path" short:"s" description:"path to use for firecracker socket"`
 	IpId           byte   `byte:"id" description:"an ip we use to generate an ip address"`

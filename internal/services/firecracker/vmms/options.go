@@ -18,14 +18,15 @@ var parent_dir = "/sparkd/"
 
 func (o *Options) GenerateOpt(id byte, image, name string) (*Options, error) {
 
-	fc_ip := net.IPv4(172, 102, 0, id).String()
-	gateway_ip := "172.102.0.1"
-	mask_long := "255.255.255.0"
+	fc_ip := net.IPv4(174, 138, 44, 160+id).String()
+	// gateway_ip := "174.138.44.163"
+	// mask_long := "255.255.0.0"
 	bootArgs := "ro console=ttyS0 noapic reboot=k panic=1 earlycon pci=off init=init nomodules random.trust_cpu=on tsc=reliable quiet "
-	bootArgs = bootArgs + fmt.Sprintf("ip=%s::%s:%s::eth0:off", fc_ip, gateway_ip, mask_long)
+	// bootArgs = bootArgs + fmt.Sprintf("ip=%s::%s:%s::eth0:off", fc_ip, gateway_ip, mask_long)
 
 	out := &Options{
 		Id:             rand.UUID(),
+		Name:           name,
 		VmIndex:        int64(id),
 		FcBinary:       "firecracker",
 		FcKernelImage:  parent_dir + "vmlinux.bin", // make sure that this file exists in the current directory with valid sum5
@@ -55,14 +56,18 @@ func (o *Options) GenerateOpt(id byte, image, name string) (*Options, error) {
 
 	// out.LogFile = fmt.Sprintf("%s%d-%s.log", parent_dir, out.VmIndex, name)
 
+	// if err := syscall.Mkfifo(out.LogFile, 0700); err != nil {
+	// 	return nil, fmt.Errorf("failed to create fifo file, %s", err)
+	// }
+
 	return out, nil
 }
 
 func (opts *Options) getFcConfig() firecracker.Config {
 
 	return firecracker.Config{
-		VMID:            opts.Id,
-		SocketPath:      opts.ApiSocket,
+		VMID: opts.Id,
+		// SocketPath:      opts.ApiSocket,
 		KernelImagePath: opts.FcKernelImage,
 		KernelArgs:      opts.KernelBootArgs,
 		LogLevel:        "debug",
@@ -82,20 +87,27 @@ func (opts *Options) getFcConfig() firecracker.Config {
 				StaticConfiguration: &firecracker.StaticNetworkConfiguration{
 					MacAddress:  opts.TapMacAddr,
 					HostDevName: opts.Tap,
+					IPConfiguration: &firecracker.IPConfiguration{
+						IPAddr: net.IPNet{
+							IP:   net.ParseIP(opts.FcIP),
+							Mask: net.CIDRMask(16, 32),
+						},
+						Gateway: net.ParseIP("174.138.44.163"),
+					},
 				},
 				AllowMMDS: true,
 			},
 		},
 
-		ForwardSignals: []os.Signal{
-			os.Interrupt,
-		},
+		// ForwardSignals: []os.Signal{
+		// 	os.Interrupt,
+		// },
 
 		//for specifying the number of cpus and memory
 		MachineCfg: models.MachineConfiguration{
 			VcpuCount:  firecracker.Int64(1),
 			Smt:        firecracker.Bool(false),
-			MemSizeMib: firecracker.Int64(1024),
+			MemSizeMib: firecracker.Int64(526),
 		},
 
 		// Enable seccomp as recommended by firecracker-doc

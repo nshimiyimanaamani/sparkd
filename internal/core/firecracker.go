@@ -2,7 +2,6 @@ package core
 
 import (
 	"context"
-	"net"
 	"time"
 
 	"github.com/firecracker-microvm/firecracker-go-sdk"
@@ -28,12 +27,13 @@ const (
 type Firecracker struct {
 	Id         string
 	Name       string
+	Image      string
 	SocketPath string
 	Ctx        context.Context
 	CancelCtx  context.CancelFunc
 	Vm         *firecracker.Machine
 	State      VmState
-	Agent      net.IP
+	Agent      any
 	CreatedAt  *time.Time
 	UpdatedAt  *time.Time
 }
