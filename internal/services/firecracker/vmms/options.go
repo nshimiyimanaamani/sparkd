@@ -99,15 +99,15 @@ func (opts *Options) getFcConfig() firecracker.Config {
 			},
 		},
 
-		// ForwardSignals: []os.Signal{
-		// 	os.Interrupt,
-		// },
+		ForwardSignals: []os.Signal{
+			os.Interrupt,
+		},
 
 		//for specifying the number of cpus and memory
 		MachineCfg: models.MachineConfiguration{
 			VcpuCount:  firecracker.Int64(1),
 			Smt:        firecracker.Bool(false),
-			MemSizeMib: firecracker.Int64(526),
+			MemSizeMib: firecracker.Int64(1024),
 		},
 
 		// Enable seccomp as recommended by firecracker-doc
