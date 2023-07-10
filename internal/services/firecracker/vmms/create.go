@@ -13,15 +13,13 @@ import (
 )
 
 // CreateVmm is responsible to create vm and return its ip address
-func (o *Options) Create(ctx context.Context) (*core.Firecracker, error) {
+func (o *Options) Create(ctx context.Context, fc *core.Firecracker) (*core.Firecracker, error) {
 
 	llg := render.GetLogger(ctx)
 
 	cfg := o.getFcConfig()
 
-	// logger := logging.NewFileLogger("/path/to/firecracker.log", logging.Debug)
 	opts := []firecracker.Opt{
-		// firecracker.WithProcessRunner(o.jailerCommand(ctx, cfg.VMID, true)),
 		firecracker.WithLogger(log.NewEntry(llg)),
 	}
 
@@ -45,20 +43,14 @@ func (o *Options) Create(ctx context.Context) (*core.Firecracker, error) {
 
 	now := time.Now().UTC()
 
-	res := &core.Firecracker{
-		Id:         m.Cfg.VMID,
-		SocketPath: m.Cfg.SocketPath,
-		Image:      o.ProvidedImage,
-		Name:       o.Name,
-		Ctx:        ctx,
-		// CancelCtx:  vmCancel,
-		Vm:        m,
-		Agent:     m.Cfg.NetworkInterfaces[0].StaticConfiguration,
-		State:     core.StateCreated,
-		CreatedAt: &now,
-	}
+	fc.SocketPath = m.Cfg.SocketPath
+	fc.Image = o.ProvidedImage
+	fc.Ctx = ctx
+	fc.Vm = m
+	fc.Agent = m.Cfg.NetworkInterfaces[0].StaticConfiguration
+	fc.CreatedAt = &now
 
-	defer Start(ctx, res)
+	defer Start(ctx, fc)
 
-	return res, nil
+	return fc, nil
 }

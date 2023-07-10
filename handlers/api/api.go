@@ -13,10 +13,10 @@ func Handler() http.Handler {
 	r.Route("/machines", func(r chi.Router) {
 		r.Post("/", machines.Create())
 		r.Get("/list", machines.List())
-		r.Post("/resume", machines.Resume())
 		r.Route("/{vm_id}", func(r chi.Router) {
 			r.Get("/", machines.Find())
 			r.Put("/", machines.Stop())
+			r.Post("/", machines.Resume())
 			r.Delete("/", machines.Delete())
 			r.Get("/config", machines.Config())
 		})

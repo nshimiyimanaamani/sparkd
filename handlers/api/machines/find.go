@@ -29,22 +29,28 @@ func Find() http.HandlerFunc {
 			return
 		}
 
-		cli := client.NewClient(r.Context(), running.Vm.Cfg.SocketPath)
-		resources, err := cli.GetResource()
-		if err != nil {
-			log.Fatalf("failed to get vm config, %s", err)
-			render.JSON(w, err, http.StatusInternalServerError)
-			return
-		}
+		var (
+			instance, resources any = nil, nil
+			err                 error
+		)
 
-		instance, err := cli.GetInstance(r.Context())
-		if err != nil {
-			log.Fatalf("failed to get vm config, %s", err)
-			render.JSON(w, err, http.StatusInternalServerError)
-			return
-		}
+		if running.State != core.StateRunning {
+			cli := client.NewClient(r.Context(), running.Vm.Cfg.SocketPath)
+			resources, err = cli.GetResource()
+			if err != nil {
+				log.Fatalf("failed to get vm config, %s", err)
+				render.JSON(w, err, http.StatusInternalServerError)
+				return
+			}
 
-		resp := CreateResponse{
+			instance, err = cli.GetInstance(r.Context())
+			if err != nil {
+				log.Fatalf("failed to get vm config, %s", err)
+				render.JSON(w, err, http.StatusInternalServerError)
+				return
+			}
+		}
+		resp := &CreateResponse{
 			Name:     running.Name,
 			State:    string(running.State),
 			IpAddr:   string(running.Vm.Cfg.MmdsAddress),

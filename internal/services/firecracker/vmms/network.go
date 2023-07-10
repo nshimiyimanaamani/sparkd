@@ -9,7 +9,7 @@ import (
 func (o *Options) setNetwork() error {
 
 	// delete tap device if it exists
-	if res, err := cmd.RunSudo(fmt.Sprintf("ip link del %s 2> /dev/null || true", o.Tap)); res != 1 && err != nil {
+	if res, err := cmd.RunNoneSudo(fmt.Sprintf("ip link del %s 2> /dev/null || true", o.Tap)); res != 1 && err != nil {
 		return fmt.Errorf("failed during deleting tap device: %v", err)
 	}
 

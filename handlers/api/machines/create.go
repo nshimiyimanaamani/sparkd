@@ -38,20 +38,23 @@ func Create() http.HandlerFunc {
 		ctx, cancel := context.WithTimeout(r.Context(), 1000*time.Second)
 		defer cancel()
 
-		m, err := opts.Create(ctx)
-		if err != nil {
-			log.Printf("failed to create machine %v", err)
-			return
+		m := &core.Firecracker{
+			Id:        opts.Id,
+			Name:      in.Name,
+			CancelCtx: cancel,
+			State:     core.StateCreated,
+			IpAddr:    opts.FcIP,
 		}
 
-		resp := CreateResponse{
+		defer opts.Create(ctx, m)
+
+		resp := &CreateResponse{
 			ID:         m.Id,
 			SocketPath: m.SocketPath,
 			Name:       in.Name,
 			State:      string(m.State),
 			IpAddr:     opts.FcIP,
 			Agent:      m.Agent,
-			CreatedAt:  m.CreatedAt,
 		}
 
 		render.JSON(w, resp, http.StatusOK)

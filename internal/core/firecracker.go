@@ -29,6 +29,7 @@ type Firecracker struct {
 	Name       string
 	Image      string
 	SocketPath string
+	IpAddr     string
 	Ctx        context.Context
 	CancelCtx  context.CancelFunc
 	Vm         *firecracker.Machine

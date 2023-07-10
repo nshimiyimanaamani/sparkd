@@ -2,9 +2,10 @@ package machines
 
 import (
 	"encoding/json"
-	"io"
+	"fmt"
 	"net/http"
 
+	"github.com/go-chi/chi"
 	"github.com/quarksgroup/sparkd/internal/core"
 	"github.com/quarksgroup/sparkd/internal/render"
 )
@@ -13,22 +14,20 @@ import (
 func Resume() http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		log := render.GetLogger(r.Context())
 
-		body, err := io.ReadAll(r.Body)
-		if err != nil {
-			log.Fatalf("failed to read body, %s", err)
+		id := chi.URLParam(r, "vm_id")
+
+		running, ok := core.RunVms[id]
+		if !ok {
+			res := &Msg{
+				Message: fmt.Sprintf("the vm machine with this id %s is not exist", id),
+			}
+			log.Error(res.Message)
+			render.JSON(w, res, http.StatusNotFound)
+			return
 		}
-		defer r.Body.Close()
-
-		in := new(DeleteRequest)
-
-		json.Unmarshal([]byte(body), in)
-		if err != nil {
-			log.Fatalf("error during reading passed request body: %v", err.Error())
-		}
-
-		running := core.RunVms[in.ID]
 
 		if err := running.Vm.ResumeVM(running.Ctx); err != nil {
 			log.Fatalf("failed to resume vm, %s", err)

@@ -99,9 +99,7 @@ func (opts *Options) getFcConfig() firecracker.Config {
 			},
 		},
 
-		ForwardSignals: []os.Signal{
-			os.Interrupt,
-		},
+		ForwardSignals: make([]os.Signal, 0),
 
 		//for specifying the number of cpus and memory
 		MachineCfg: models.MachineConfiguration{

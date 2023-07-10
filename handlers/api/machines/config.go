@@ -29,6 +29,15 @@ func Config() http.HandlerFunc {
 			return
 		}
 
+		if running.State != core.StateRunning {
+			res := &Msg{
+				Message: fmt.Sprintf("the vm machine with this id %s is not running", id),
+			}
+			log.Error(res.Message)
+			render.JSON(w, res, http.StatusNotFound)
+			return
+		}
+
 		cli := client.NewClient(r.Context(), running.Vm.Cfg.SocketPath)
 
 		cfg, err := cli.GetVmConfig(r.Context())
