@@ -26,4 +26,6 @@ runcmd:
   - cp ./firecracker/build/cargo_target/${ARCH}-unknown-linux-musl/debug/jailer /usr/bin
   - sh -c "$(curl -ssL https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
   - git clone https://github.com/quarksgroup/sparkd.git
-  - task all -d sparkd
+  - cd /sparkd
+  - task all
+  - nohup ./bin &

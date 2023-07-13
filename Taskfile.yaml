@@ -4,13 +4,22 @@ version: '3'
 
 silent: true
 
+dotenv:
+  - .env
+
 tasks:
   build:
     desc: "Builds the firecracker-land binary"
     cmds:
       - echo "Building firecracker-land binary..."
-      - go build --tags netgo --ldflags '-s -w -extldflags "-lm -lstdc++ -static"' -o bin cmd/spark/main.go
+      - GO_ENABLED=1 go build -ldflags="{{.LDFLAGS}}" -o bin cmd/spark/*.go
       - echo "Done!"
+    vars:
+      VERSION:
+        sh: git rev-parse --short HEAD
+      DATE:
+        sh: date -u +%Y-%m-%d-%H:%M:%S-%Z
+      LDFLAGS: "-X sparkd.version={{.VERSION}} -X sparkd.date={{.DATE}}"
   run:
     desc: "Runs the firecracker-land binary"
     cmds:

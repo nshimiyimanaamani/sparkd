@@ -5,16 +5,26 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/quarksgroup/sparkd/handlers/api/machines"
+	"github.com/quarksgroup/sparkd/internal/core"
 )
 
-func Handler() http.Handler {
+// Server is the struct that implements the http.Handler interface
+type Server struct {
+	vms core.MachineStore
+}
+
+func New(vms core.MachineStore) *Server {
+	return &Server{vms: vms}
+}
+
+func (srv *Server) Handler() http.Handler {
 	r := chi.NewRouter()
 
 	r.Route("/machines", func(r chi.Router) {
-		r.Post("/", machines.Create())
-		r.Get("/list", machines.List())
+		r.Post("/", machines.Create(srv.vms))
+		r.Get("/list", machines.List(srv.vms))
 		r.Route("/{vm_id}", func(r chi.Router) {
-			r.Get("/", machines.Find())
+			r.Get("/", machines.Find(srv.vms))
 			r.Put("/", machines.Stop())
 			r.Post("/", machines.Resume())
 			r.Delete("/", machines.Delete())
