@@ -8,37 +8,25 @@ import (
 )
 
 // For getting all running vms
-func List(machines core.MachineStore) http.HandlerFunc {
+func List() http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		log := render.GetLogger(r.Context())
+		// log := render.GetLogger(r.Context())
 
 		out := make([]CreateResponse, 0)
 
-		res, err := machines.List(r.Context())
-		if err != nil {
-			e := &Msg{
-				Message: err.Error(),
-			}
-			log.Error(err.Error())
-			render.JSON(w, e, http.StatusConflict)
-			return
-		}
-
-		for _, item := range res {
-			// pid, _ := v.Vm.PID()
+		for _, v := range core.RunVms {
+			pid, _ := v.Vm.PID()
 			out = append(out, CreateResponse{
-				ID:         item.Id,
-				Name:       item.Name,
-				SocketPath: item.SocketPath,
-				State:      string(item.State),
-				IpAddr:     item.IpAddr,
-				Image:      item.Image,
-				// IpAddr:     string(item.Vm.Cfg.MmdsAddress),
-				// PID:        int64(pid),
-				CreatedAt: item.CreatedAt,
-				UpdatedAt: item.UpdatedAt,
+				Name:       v.Name,
+				SocketPath: v.SocketPath,
+				State:      string(v.State),
+				IpAddr:     string(v.Vm.Cfg.MmdsAddress),
+				ID:         v.Vm.Cfg.VMID,
+				PID:        int64(pid),
+				CreatedAt:  v.CreatedAt,
+				UpdatedAt:  v.UpdatedAt,
 			})
 		}
 

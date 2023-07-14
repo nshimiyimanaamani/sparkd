@@ -11,5 +11,3 @@ init
 !init/
 *.sh
 *.log
-.env
-*.db*

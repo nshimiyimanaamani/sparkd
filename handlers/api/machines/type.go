@@ -16,7 +16,6 @@ type CreateResponse struct {
 	State      string     `json:"state,omitempty"`
 	Name       string     `json:"name,omitempty"`
 	IpAddr     string     `json:"ip_address,omitempty"`
-	Image      string     `json:"image,omitempty"`
 	Agent      any        `json:"agent,omitempty"`
 	Instance   any        `json:"instance,omitempty"`
 	Resource   any        `json:"resource,omitempty"`

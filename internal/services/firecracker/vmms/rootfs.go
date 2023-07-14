@@ -19,9 +19,9 @@ import (
 // 7. delete the init base tar file
 // 8. delete the podman supplied tar file
 // 9. return the rootfs path or name
-func (o *Config) generateRFs(name string) (string, error) {
+func (o *Options) generateRFs(name string) (string, error) {
 
-	fsName := fmt.Sprintf("%d-%s.ext4", o.vmIndex, name)
+	fsName := fmt.Sprintf("%d-%s.ext4", o.VmIndex, name)
 
 	// for creating the rootfs directory with 526MB size
 	if _, err := cmd.RunNoneSudo(fmt.Sprintf("fallocate -l 526MB %s", fsName)); err != nil {
@@ -48,27 +48,27 @@ func (o *Config) generateRFs(name string) (string, error) {
 		return "", fmt.Errorf("failed to mount rootfs file: %v", err)
 	}
 
-	imageTar := fmt.Sprintf("%d-%s.tar", o.vmIndex, name)
-	imageName := fmt.Sprintf("%d-%s", o.vmIndex, name)
+	imageTar := fmt.Sprintf("%d-%s.tar", o.VmIndex, name)
+	imageName := fmt.Sprintf("%d-%s", o.VmIndex, name)
 
 	// for exporting the podman tar file from supplied podman image
-	if _, err := cmd.RunNoneSudo(fmt.Sprintf("podman create --name %s %s", imageName, o.providedImage)); err != nil {
+	if _, err := cmd.RunNoneSudo(fmt.Sprintf("podman create --name %s %s", imageName, o.ProvidedImage)); err != nil {
 		return "", fmt.Errorf("podman failed to create tar file: %v", err)
 	}
 	defer cmd.RunNoneSudo(fmt.Sprintf("podman rm -f %s", imageName))
 
 	// for exporting the podman tar file from supplied podman image
-	if _, err := cmd.RunNoneSudo(fmt.Sprintf("podman export %s -o %s%s", imageName, o.dir, imageTar)); err != nil {
+	if _, err := cmd.RunNoneSudo(fmt.Sprintf("podman export %s -o %s%s", imageName, parent_dir, imageTar)); err != nil {
 		return "", fmt.Errorf("podman failed to export tar file: %v", err)
 	}
 
 	// for extracting the podman supplied tar file to the rootfs directory
-	if _, err := cmd.RunNoneSudo(fmt.Sprintf("tar -xvf %s%s -C %s", o.dir, imageTar, tmpDir)); err != nil {
+	if _, err := cmd.RunNoneSudo(fmt.Sprintf("tar -xvf %s%s -C %s", parent_dir, imageTar, tmpDir)); err != nil {
 		return "", fmt.Errorf("failed to extract podman supplied tar file: %v", err)
 	}
 
 	// include our init process into ext4 file system exported from podman
-	if _, err := cmd.RunNoneSudo(fmt.Sprintf("cp -r %sinit %s", o.dir, tmpDir)); err != nil {
+	if _, err := cmd.RunNoneSudo(fmt.Sprintf("cp -r %sinit %s", parent_dir, tmpDir)); err != nil {
 		return "", fmt.Errorf("failed to cp init to tmp dir: %v", err)
 	}
 
