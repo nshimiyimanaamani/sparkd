@@ -1,17 +1,15 @@
 package machines
 
 import (
-	"context"
 	"net/http"
-	"time"
 
 	"github.com/quarksgroup/sparkd/internal/core"
+	"github.com/quarksgroup/sparkd/internal/rand"
 	"github.com/quarksgroup/sparkd/internal/render"
-	"github.com/quarksgroup/sparkd/internal/services/firecracker/vmms"
 )
 
 // Create handler is for creating new vm instance
-func Create() http.HandlerFunc {
+func Create(machines core.MachineStore) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 
@@ -28,36 +26,30 @@ func Create() http.HandlerFunc {
 			return
 		}
 
-		opt := vmms.Options(core.Config{})
+		m := &core.Machine{
+			Id:      rand.UUID(),
+			Name:    in.Name,
+			Image:   in.Image,
+			VmIndex: IpByte,
+			State:   core.StateCreated,
+		}
 
-		opts, err := opt.GenerateOpt(IpByte, in.Image, in.Name)
+		res, err := machines.Create(r.Context(), m)
 		if err != nil {
-			log.Fatalf("failed to generate option config, %s", err)
+			log.Fatalf("error during creating new vm: %v", err.Error())
+			return
 		}
 
-		ctx, cancel := context.WithTimeout(r.Context(), 1000*time.Second)
-		defer cancel()
-
-		m := &core.Firecracker{
-			Id:        opts.Id,
-			Name:      in.Name,
-			CancelCtx: cancel,
-			State:     core.StateCreated,
-			IpAddr:    opts.FcIP,
-		}
-
-		defer opts.Create(ctx, m)
-
-		resp := &CreateResponse{
+		out := &CreateResponse{
 			ID:         m.Id,
 			SocketPath: m.SocketPath,
 			Name:       in.Name,
 			State:      string(m.State),
-			IpAddr:     opts.FcIP,
+			IpAddr:     res.IpAddr,
 			Agent:      m.Agent,
 		}
 
-		render.JSON(w, resp, http.StatusOK)
+		render.JSON(w, out, http.StatusOK)
 
 	}
 

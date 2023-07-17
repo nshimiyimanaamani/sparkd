@@ -31,7 +31,7 @@ func Config() http.HandlerFunc {
 
 		if running.State != core.StateRunning {
 			res := &Msg{
-				Message: fmt.Sprintf("the vm machine with this id %s is not running", id),
+				Message: fmt.Sprintf("the vm machine with this id %s is not available", id),
 			}
 			log.Error(res.Message)
 			render.JSON(w, res, http.StatusNotFound)

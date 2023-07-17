@@ -9,7 +9,7 @@ import (
 )
 
 // StartVm is responsible to start vm
-func Start(ctx context.Context, m *core.Firecracker) error {
+func start(ctx context.Context, m *core.Machine) error {
 
 	core.RunVms[m.Id] = m
 
