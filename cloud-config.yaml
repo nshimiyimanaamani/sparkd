@@ -7,7 +7,12 @@ runcmd:
   - echo " " >> /etc/containers/registries.conf
   - echo "# Allow to use docker.io as default registry" >> /etc/containers/registries.conf
   - echo "unqualified-search-registries = [\"docker.io\"]" >> /etc/containers/registries.conf
+  - apt-get install -y ca-certificates fuse3 sqlite3
+  - ARCH="amd64"
+  - VERSION="0.5.1"
+  - pushd $(mktemp --directory) && wget "https://github.com/superfly/litefs/releases/download/v${VERSION}/litefs-v${VERSION}-linux-${ARCH}.tar.gz" && tar xvf "litefs-v${VERSION}-linux-${ARCH}.tar.gz" && sudo mv litefs /usr/local/bin && popd
   - add-apt-repository ppa:git-core/ppa -y --update && apt-get install git -y
+  - mkdir -p $HOME/litefs-primary && mkdir -p $HOME/litefs-secondary
   - curl -O https://storage.googleapis.com/golang/go1.20.1.linux-amd64.tar.gz
   - tar -xvf go1.20.1.linux-amd64.tar.gz
   - cp -r go /usr/local
@@ -28,4 +33,4 @@ runcmd:
   - git clone https://github.com/quarksgroup/sparkd.git
   - cd /sparkd
   - task all
-  - nohup ./bin &
+  - nohup litefs mount -config litefs.yml ./bin &

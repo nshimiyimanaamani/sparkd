@@ -11,18 +11,21 @@ func provideDB(lg *lgg.Logger, name string) *db.DB {
 
 	lg.Infof("connecting to database '%s'", name)
 
-	db, err := db.New(name)
+	db, err := db.New(name, lg)
 	if err != nil {
 		lg.Debugf("failed to connect to database: %v", err)
-		panic(err)
-	}
-
-	m, err := schema.Migrate(db, schema.Up)
-	if err != nil {
 		lg.Fatal(err)
 	}
 
-	lg.Infof("applied '%d' new migration(s)", m)
+	if ok, _ := db.IsPrimary(); ok {
+
+		m, err := schema.Migrate(db, schema.Up)
+		if err != nil {
+			lg.Fatal(err)
+		}
+
+		lg.Infof("applied '%d' new migration(s)", m)
+	}
 
 	return db
 }

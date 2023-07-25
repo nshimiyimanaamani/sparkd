@@ -9,23 +9,41 @@ import (
 	"path/filepath"
 
 	_ "github.com/mattn/go-sqlite3"
+	lgg "github.com/sirupsen/logrus"
 )
 
 var driver = "sqlite3"
 
 type DB struct {
 	Sql *sql.DB
-	dsn string
+	Dsn string
 }
 
-func New(dsn string) (*DB, error) {
+func New(dsn string, log *lgg.Logger) (*DB, error) {
+
 	dsn = fmt.Sprintf("file:%s?cache=shared&mode=rwc&_journal_mode=WAL", dsn)
 
 	db, err := sql.Open(driver, dsn)
 	if err != nil {
 		return nil, err
 	}
-	return &DB{db, dsn}, nil
+
+	for {
+		i := 0
+		var err error
+		log.Println("testing database...")
+		for i < 5 {
+			log.Printf("attempt %d", i+1)
+			err = db.Ping()
+			if err == nil {
+				return &DB{db, dsn}, nil
+			}
+			i++
+		}
+		if err != nil {
+			return nil, err
+		}
+	}
 }
 
 // BeginTx starts a transaction and returns a wrapper Tx type. This type
@@ -48,7 +66,7 @@ func (db *DB) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) {
 // Primary returns the address of the primary database.
 // if the current node is the primary, it returns an empty string.
 func (db *DB) Primary() (string, error) {
-	primaryFilename := filepath.Join(filepath.Dir(db.dsn), ".primary")
+	primaryFilename := filepath.Join(filepath.Dir(db.Dsn), ".primary")
 
 	primary, err := os.ReadFile(primaryFilename)
 	if err != nil {

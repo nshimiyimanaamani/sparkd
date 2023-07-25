@@ -15,9 +15,6 @@ import (
 // CreateVmm is responsible to create vm and return its ip address
 func (dfOpt *Config) Create(ctx context.Context, fc *core.Machine) (*core.Machine, error) {
 
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
-
 	llg := render.GetLogger(ctx)
 
 	opt, err := dfOpt.generateOpt(fc.VmIndex, fc.Image, fc.Id, fc.Name)
@@ -54,8 +51,9 @@ func (dfOpt *Config) Create(ctx context.Context, fc *core.Machine) (*core.Machin
 	fc.SocketPath = m.Cfg.SocketPath
 	fc.Ctx = ctx
 	fc.Vm = m
-	fc.CancelCtx = cancel
+	// fc.CancelCtx = cancel
 	fc.Agent = m.Cfg.NetworkInterfaces[0].StaticConfiguration
+	fc.IpAddr = m.Cfg.NetworkInterfaces[0].StaticConfiguration.IPConfiguration.IPAddr.String()
 	fc.CreatedAt = &now
 
 	defer start(ctx, fc)

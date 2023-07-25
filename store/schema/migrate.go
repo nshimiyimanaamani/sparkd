@@ -34,7 +34,7 @@ func Migrate(db *db.DB, dir Direction) (int, error) {
 
 	n, err := migrate.Exec(db.Sql, "sqlite3", migrations, migrate.MigrationDirection(dir))
 	if err != nil {
-		return n, fmt.Errorf("could not apply migrations%w", err)
+		return n, fmt.Errorf("could not apply migrations: %w", err)
 	}
 	return n, nil
 }

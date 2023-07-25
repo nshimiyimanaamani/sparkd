@@ -3,6 +3,7 @@ package machines
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/quarksgroup/sparkd/internal/core"
 	"github.com/quarksgroup/sparkd/internal/db"
@@ -33,23 +34,46 @@ func (s *Store) Create(ctx context.Context, m *core.Machine) (*core.Machine, err
 		}
 	}
 
+	// run background process to start vm with using goroutine and channel to handle context canceled.
+
+	cntx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	log := render.GetLogger(cntx)
+
+	resultChan := make(chan error)
 	go func() {
-
-		log := render.GetLogger(ctx)
-
-		m, err = s.m.Create(ctx, m)
+		_, err := s.m.Create(cntx, m)
 		if err != nil {
-			log.Errorf("failed to create new vm-machine: %v", err)
-			return
+			log.Errorf("failed to create new VM-machine: %v", err)
 		}
-
-		_, err = tx.ExecContext(ctx, updateQuery, m.State, m.IpAddr, m.SocketPath, m.UpdatedAt, m.Id)
-		if err != nil {
-			log.Errorf("failed to update vm-machine: %v", err)
-			return
-		}
-
+		resultChan <- err
 	}()
+
+	select {
+	case <-cntx.Done():
+		fmt.Println("VM startup timed out.")
+		_, err = tx.Exec(updateQuery, m.State, m.IpAddr, m.SocketPath, m.UpdatedAt, m.Id)
+		if err != nil {
+			log.Errorf("failed to update VM-machine: %v", err)
+		}
+	case err := <-resultChan:
+		if err != nil {
+			fmt.Println("VM creation action failed:", err)
+			_, err = tx.Exec(updateQuery, m.State, m.IpAddr, m.SocketPath, m.UpdatedAt, m.Id)
+			if err != nil {
+				log.Errorf("failed to update VM-machine: %v", err)
+			}
+		} else {
+			fmt.Println("VM startup completed successfully.")
+			_, err = tx.Exec(updateQuery, m.State, m.IpAddr, m.SocketPath, m.UpdatedAt, m.Id)
+			if err != nil {
+				log.Errorf("failed to update VM-machine: %v", err)
+			}
+		}
+	}
+
+	m.CancelCtx = cancel
 
 	return m, tx.Commit()
 }

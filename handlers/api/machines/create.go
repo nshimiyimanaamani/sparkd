@@ -22,7 +22,11 @@ func Create(machines core.MachineStore) http.HandlerFunc {
 		in := new(CreateRequest)
 
 		if err := render.DecodeJSON(r, &in); err != nil {
-			log.Fatalf("error during reading passed request body: %v", err.Error())
+			log.Errorf("error during reading passed request body: %v", err.Error())
+			msg := &Msg{
+				Message: err.Error(),
+			}
+			render.JSON(w, msg, http.StatusBadRequest)
 			return
 		}
 
@@ -36,7 +40,11 @@ func Create(machines core.MachineStore) http.HandlerFunc {
 
 		res, err := machines.Create(r.Context(), m)
 		if err != nil {
-			log.Fatalf("error during creating new vm: %v", err.Error())
+			log.Error(err.Error())
+			msg := &Msg{
+				Message: err.Error(),
+			}
+			render.JSON(w, msg, http.StatusConflict)
 			return
 		}
 

@@ -8,7 +8,8 @@ import (
 
 type Store struct {
 	db *db.DB
-	m  *vmms.Config
+	// sec *db.DB // secondary database instance that hold the replace of db in case of failure
+	m *vmms.Config
 }
 
 func New(db *db.DB, m *vmms.Config) *Store {
