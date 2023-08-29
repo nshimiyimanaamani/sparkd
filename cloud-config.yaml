@@ -4,15 +4,17 @@ runcmd:
   - apt-get update
   - curl -fsSL https://get.docker.com | sh
   - apt-get install podman -y
+  - apt-get install iperf3 #used to bind the interface associated with the address <host>
   - echo " " >> /etc/containers/registries.conf
   - echo "# Allow to use docker.io as default registry" >> /etc/containers/registries.conf
   - echo "unqualified-search-registries = [\"docker.io\"]" >> /etc/containers/registries.conf
-  - apt-get install -y ca-certificates fuse3 sqlite3
+  - apt-get install -y ca-certificates fuse3 sqlite3 consul libfuse-dev
+  - nohup consul agent -client "::" -dev &
   - ARCH="amd64"
   - VERSION="0.5.1"
   - pushd $(mktemp --directory) && wget "https://github.com/superfly/litefs/releases/download/v${VERSION}/litefs-v${VERSION}-linux-${ARCH}.tar.gz" && tar xvf "litefs-v${VERSION}-linux-${ARCH}.tar.gz" && sudo mv litefs /usr/local/bin && popd
   - add-apt-repository ppa:git-core/ppa -y --update && apt-get install git -y
-  - mkdir -p $HOME/litefs-primary && mkdir -p $HOME/litefs-secondary
+  - mkdir -p $HOME/litefs-primary
   - curl -O https://storage.googleapis.com/golang/go1.20.1.linux-amd64.tar.gz
   - tar -xvf go1.20.1.linux-amd64.tar.gz
   - cp -r go /usr/local
@@ -31,6 +33,20 @@ runcmd:
   - cp ./firecracker/build/cargo_target/${ARCH}-unknown-linux-musl/debug/jailer /usr/bin
   - sh -c "$(curl -ssL https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
   - git clone https://github.com/quarksgroup/sparkd.git
+  - wget https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-9.3p2.tar.gz
+  - tar -xvf openssh-9.3p1.tar.gz
+  - cd openssh-9.3p1
+  - ./configure --prefix=/usr --sysconfdir=/etc/ssh --with-md5-passwords --with-privsep-path=/var/lib/sshd
+  - make
+  - make install
+  - mkdir /var/lib/sshd
+  - groupadd sshd
+  - useradd -g sshd -c 'sshd privsep' -d /var/lib/sshd -s /bin/false sshd
+  - ssh-keygen -A
+  - cp contrib/redhat/sshd.init /etc/init.d/sshd
+  - chmod +x /etc/init.d/sshd
+  - update-rc.d sshd defaults
+  - service sshd start
   - cd /sparkd
   - task all
   - nohup litefs mount -config litefs.yml ./bin &

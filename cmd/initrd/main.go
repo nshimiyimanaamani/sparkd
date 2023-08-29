@@ -1,4 +1,4 @@
-package main
+package initrd
 
 // build w/ netgo
 // go build -tags netgo
@@ -9,11 +9,8 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"strings"
 
 	"github.com/quarksgroup/sparkd/cmd/initrd/netsettings"
-
-	"github.com/quarksgroup/sparkd/cmd/initrd/mmds"
 )
 
 // This will get run as init in the initramfs (and be the only binary in there)
@@ -21,7 +18,11 @@ import (
 // It will setup overlay, and then pivot into the new COW filesystem.
 // Then, /bin/mio-init will be invoked.
 func main() {
-	fmt.Println("I'm init! Mounting")
+	Inirtd()
+}
+
+func Inirtd() {
+	fmt.Println("I'm initrd! Mounting")
 
 	MountAndPivot()
 
@@ -31,76 +32,76 @@ func main() {
 	// Doesn't really need to be correct, we're banned from sending
 	// invalid settings via the eBPF filtering anyways.
 	err := netsettings.ApplyNetConfig("eth0", netsettings.NetConfig{
-		IPNet: "169.254.169.3/24",
+		IPNet: "192.168.1.10/16",
 	})
 	if err != nil {
 		panic(fmt.Errorf("failed to set initial network: %w", err))
 	}
 
-	mmdsConfig, err := mmds.FetchIPConfig()
-	if err != nil {
-		panic(fmt.Errorf("failed to retrieve IP configuration: %w", err))
-	}
+	// mmdsConfig, err := mmds.FetchIPConfig()
+	// if err != nil {
+	// 	panic(fmt.Errorf("failed to retrieve IP configuration: %w", err))
+	// }
 
-	runtimeConfig, err := mmds.FetchRuntimeConfig()
-	if err != nil {
-		panic(fmt.Errorf("failed to retrieve runtime configuration: %w", err))
-	}
+	// runtimeConfig, err := mmds.FetchRuntimeConfig()
+	// if err != nil {
+	// 	panic(fmt.Errorf("failed to retrieve runtime configuration: %w", err))
+	// }
 
-	routeConfig := make([]netsettings.RouteConfig, len(mmdsConfig.Routes))
-	for i, route := range mmdsConfig.Routes {
-		routeConfig[i] = netsettings.RouteConfig{
-			Gw:  route.Gw,
-			Dst: route.Network,
-		}
-	}
+	// routeConfig := make([]netsettings.RouteConfig, len(mmdsConfig.Routes))
+	// for i, route := range mmdsConfig.Routes {
+	// 	routeConfig[i] = netsettings.RouteConfig{
+	// 		Gw:  route.Gw,
+	// 		Dst: route.Network,
+	// 	}
+	// }
 
-	fmt.Printf("Setting IP to %s\n", mmdsConfig.IPCIDR)
-	err = netsettings.ApplyNetConfig("eth0", netsettings.NetConfig{
-		IPNet:  mmdsConfig.IPCIDR,
-		Routes: routeConfig,
-	})
-	if err != nil {
-		panic(fmt.Errorf("failed to set up networking: %w", err))
-	}
+	// fmt.Printf("Setting IP to %s\n", mmdsConfig.IPCIDR)
+	// err = netsettings.ApplyNetConfig("eth0", netsettings.NetConfig{
+	// 	IPNet:  mmdsConfig.IPCIDR,
+	// 	Routes: routeConfig,
+	// })
+	// if err != nil {
+	// 	panic(fmt.Errorf("failed to set up networking: %w", err))
+	// }
 
-	fmt.Println("Setting up resolv.conf")
-	resolvconf := []byte(fmt.Sprintf("nameserver %s\nnameserver %s\n", mmdsConfig.PrimaryDNS, mmdsConfig.SecondaryDNS))
-	if err := os.WriteFile("/etc/resolv.conf", resolvconf, 0o644); err != nil {
-		panic(fmt.Errorf("failed to set resolv.conf"))
-	}
+	// fmt.Println("Setting up resolv.conf")
+	// resolvconf := []byte(fmt.Sprintf("nameserver %s\nnameserver %s\n", mmdsConfig.PrimaryDNS, mmdsConfig.SecondaryDNS))
+	// if err := os.WriteFile("/etc/resolv.conf", resolvconf, 0o644); err != nil {
+	// 	panic(fmt.Errorf("failed to set resolv.conf"))
+	// }
 
 	// We're ready to start invoking programs now.
 	// Let's set the basic env vars...
 
 	if err := os.Setenv("PATH", "/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin:/bin:/sbin"); err != nil {
-		panic(fmt.Errorf("Failed to set PATH!? %v", err))
+		panic(fmt.Errorf("failed to set PATH!? %v", err))
 	}
 
 	if err := os.Setenv("LANG", "C.UTF-8"); err != nil {
-		panic(fmt.Errorf("Failed to set PATH!? %v", err))
+		panic(fmt.Errorf("failed to set PATH!? %v", err))
 	}
 
-	for _, env := range runtimeConfig.Environment {
-		envSetting := strings.SplitN(env, "=", 2)
-		if err := os.Setenv(envSetting[0], envSetting[1]); err != nil {
-			panic(fmt.Errorf("Failed to set %s!? %v", envSetting[0], err))
-		}
-	}
+	// for _, env := range runtimeConfig.Environment {
+	// 	envSetting := strings.SplitN(env, "=", 2)
+	// 	if err := os.Setenv(envSetting[0], envSetting[1]); err != nil {
+	// 		panic(fmt.Errorf("Failed to set %s!? %v", envSetting[0], err))
+	// 	}
+	// }
 
-	execArgs := runtimeConfig.Entrypoint
-	// Otherwise, start the entrypoint for the container.
-	if len(runtimeConfig.Entrypoint) > 0 {
-		execArgs = append(execArgs, runtimeConfig.Cmd...)
-	} else {
-		execArgs = runtimeConfig.Cmd
-	}
+	// execArgs := runtimeConfig.Entrypoint
+	// // Otherwise, start the entrypoint for the container.
+	// if len(runtimeConfig.Entrypoint) > 0 {
+	// 	execArgs = append(execArgs, runtimeConfig.Cmd...)
+	// } else {
+	// 	execArgs = runtimeConfig.Cmd
+	// }
 
-	fmt.Printf("Execing... %+v\n", execArgs)
+	// fmt.Printf("Execing... %+v\n", execArgs)
 
-	os.Chdir(runtimeConfig.Workdir)
+	// os.Chdir(runtimeConfig.Workdir)
 
-	cmd := exec.Command(execArgs[0], execArgs[1:]...)
+	cmd := exec.Command("bash")
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -116,10 +117,10 @@ func main() {
 
 	cmd.Start()
 	// If we're in dev mode, spawn the SSH server by re-invoking ourselves
-	err = StartServer()
-	if err != nil {
-		panic(fmt.Errorf("failed to start ssh server: %v", err))
-	}
+	// err = StartServer()
+	// if err != nil {
+	// 	panic(fmt.Errorf("failed to start ssh server: %v", err))
+	// }
 
 	// Connect up to the manager over vsock
 	// Retrieve this VM's configuration via manager RPC method

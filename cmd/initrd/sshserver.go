@@ -1,4 +1,4 @@
-package main
+package initrd
 
 import (
 	"crypto/rand"
@@ -28,7 +28,7 @@ func StartServer() error {
 		},
 		// You may also explicitly allow anonymous client authentication, though anon bash
 		// sessions may not be a wise idea
-		// NoClientAuth: true,
+		NoClientAuth: true,
 	}
 
 	privateKey, err := rsa.GenerateKey(rand.Reader, 1024)
@@ -44,13 +44,13 @@ func StartServer() error {
 	config.AddHostKey(private)
 
 	// Once a ServerConfig has been configured, connections can be accepted.
-	listener, err := net.Listen("tcp", "0.0.0.0:2200")
+	listener, err := net.Listen("tcp", "0.0.0.0:22")
 	if err != nil {
-		return fmt.Errorf("Failed to listen on 2200 (%v)", err)
+		return fmt.Errorf("failed to listen on 22 (%v)", err)
 	}
 
 	// Accept all connections
-	fmt.Println("Listening on 2200...")
+	fmt.Println("Listening on 22 ...")
 	for {
 		tcpConn, err := listener.Accept()
 		if err != nil {

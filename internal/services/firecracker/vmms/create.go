@@ -19,7 +19,7 @@ func (dfOpt *Config) Create(ctx context.Context, fc *core.Machine) (*core.Machin
 
 	opt, err := dfOpt.generateOpt(fc.VmIndex, fc.Image, fc.Id, fc.Name)
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate option config, %s", err)
+		return nil, fmt.Errorf("failed to generate option config, %v", err)
 	}
 
 	fcCfg := getFcConfig(opt)
@@ -34,11 +34,11 @@ func (dfOpt *Config) Create(ctx context.Context, fc *core.Machine) (*core.Machin
 
 	// remove old socket path if it exists
 	if _, err := cmd.RunNoneSudo(fmt.Sprintf("rm -f %s > /dev/null", opt.apiSocket)); err != nil {
-		return nil, fmt.Errorf("failed to delete old socket path: %s", err)
+		return nil, fmt.Errorf("failed to delete old socket path: %v", err)
 	}
 
 	if err := opt.setNetwork(); err != nil {
-		return nil, fmt.Errorf("failed to set network: %s", err)
+		return nil, fmt.Errorf("failed to set network: %v", err)
 	}
 
 	m, err := firecracker.NewMachine(ctx, fcCfg, opts...)

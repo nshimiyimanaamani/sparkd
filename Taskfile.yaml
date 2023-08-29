@@ -53,7 +53,7 @@ tasks:
     desc: "Builds the init binary"
     cmds:
       - echo "Building init binary..."
-      - go build --tags netgo --ldflags '-s -w -extldflags "-lm -lstdc++ -static"' -o init cmd/init/main.go
+      - CGO_ENABLED=0 go build --tags netgo --ldflags '-s -w -extldflags "-lm -lstdc++ -static"' -o init cmd/init/*.go
       - echo "Done!"
   
   gen-initrd:
@@ -61,7 +61,7 @@ tasks:
     desc: "Builds the initrd"
     cmds:
       - echo "Generating initrd..."
-      - go build -tags netgo
+      - go build -tags netgo --ldflags '-s -w -extldflags "-lm -lstdc++ -static"' -o initrd .
       - mkdir -p tmp
       - cp initrd tmp/init
       - cd tmp
@@ -70,6 +70,7 @@ tasks:
       - rm -rf tmp
       - rm -rf initrd
       - echo "Done!"
+  
   all:
     desc: "Builds the firecracker-land binary, pulls the kernel, builds the init binary, and generates the initrd"
     cmds:
@@ -77,6 +78,7 @@ tasks:
       - go mod download
       - task pull-kernel
       - task gen-init
+      - task gen-ssh
       - task gen-initrd
       - task build
       - task run

@@ -18,6 +18,7 @@ func start(ctx context.Context, m *core.Machine) error {
 
 	if err := m.Vm.Start(ctx); err != nil {
 		m.State = core.StateFailed
+		fmt.Println("error", err)
 		return fmt.Errorf("failed to start machine: %v", err)
 	}
 

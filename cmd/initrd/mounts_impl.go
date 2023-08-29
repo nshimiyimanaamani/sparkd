@@ -1,4 +1,4 @@
-package main
+package initrd
 
 import (
 	"fmt"
@@ -13,28 +13,28 @@ type mountHelperImpl struct{}
 // MustMkdir wraps os.MkdirAll, and panics if the call fails.
 func (mh *mountHelperImpl) MustMkdir(path string, perm os.FileMode) {
 	if err := os.MkdirAll(path, perm); err != nil {
-		panic(err)
+		panic(fmt.Errorf("%q", err))
 	}
 }
 
 // MustMount wraps syscall.Mount, and panics if the call fails.
 func (mh *mountHelperImpl) MustMount(src string, dst string, typ string, flags uintptr, data string) {
 	if err := syscall.Mount(src, dst, typ, flags, data); err != nil {
-		panic(err)
+		panic(fmt.Errorf("%q", err))
 	}
 }
 
 // MustSymlink wraps os.Symlink, and panics if the call fails.
 func (mh *mountHelperImpl) MustSymlink(file string, newname string) {
 	if err := os.Symlink(file, newname); err != nil {
-		panic(err)
+		panic(fmt.Errorf("%q", err))
 	}
 }
 
 // MustChdir wraps unix.Chdir, and panics if the call fails.
 func (mh *mountHelperImpl) MustChdir(dir string) {
 	if err := unix.Chdir(dir); err != nil {
-		panic(err)
+		panic(fmt.Errorf("%q", err))
 	}
 }
 

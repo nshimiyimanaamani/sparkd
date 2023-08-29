@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"os/exec"
 )
@@ -31,7 +31,7 @@ func runCommand(command string, sudo bool) (int, error) {
 	if err := cmd.Start(); err != nil {
 		return 1, fmt.Errorf("failed command start: %+v", err)
 	}
-	_, readErr := ioutil.ReadAll(stdOut)
+	_, readErr := io.ReadAll(stdOut)
 	if readErr != nil {
 		return 1, fmt.Errorf("failed reading output: %+v", readErr)
 	}

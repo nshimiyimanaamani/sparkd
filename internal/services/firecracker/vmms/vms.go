@@ -29,8 +29,8 @@ func New(dir, kernel, fcBinary, initrd, level string) *Config {
 
 func (o *Config) generateOpt(index byte, image, id, name string) (*Config, error) {
 
-	fc_ip := net.IPv4(174, 138, 44, 160+index).String()
-	// gateway_ip := "174.138.44.163"
+	fc_ip := net.IPv4(192, 168, 1, 10+index).String()
+	gateway_ip := net.IPv4(192, 168, 1, 10+index-1).String()
 	// mask_long := "255.255.0.0"
 	bootArgs := "ro console=ttyS0 noapic reboot=k panic=1 earlycon pci=off init=init nomodules random.trust_cpu=on tsc=reliable quiet rw "
 	// bootArgs = bootArgs + fmt.Sprintf("ip=%s::%s:%s::eth0:off", fc_ip, gateway_ip, mask_long)
@@ -45,18 +45,20 @@ func (o *Config) generateOpt(index byte, image, id, name string) (*Config, error
 			kernelBootArgs: bootArgs,
 			providedImage:  image,
 			tapMacAddr:     fmt.Sprintf("02:FC:00:00:00:%02x", index),
+			tapGateWay:     gateway_ip,
+			tapMask:        fmt.Sprintf("255.255.255.%d", index),
 			tap:            fmt.Sprintf("fc-tap-%d", index),
 			fcIP:           fc_ip,
 			initdPath:      o.initrd,
 			backBone:       "eth0", // eth0 or enp7s0,enp0s25
 			// ApiSocket:      fmt.Sprintf("/tmp/firecracker-%d.sock", id),
 			fcCPUCount: 1,
-			fcMemSz:    256,
+			fcMemSz:    128,
 			logger:     log.New(),
 		},
 	}
 
-	roots, err := out.generateRFs(name)
+	roots, err := out.generateRFs(o.dir, name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate rootfs image, %s", err)
 	}
@@ -106,7 +108,7 @@ func getFcConfig(opts *Config) firecracker.Config {
 							IP:   net.ParseIP(opts.fcIP),
 							Mask: net.CIDRMask(16, 32),
 						},
-						Gateway: net.ParseIP("174.138.44.163"),
+						Gateway: net.ParseIP("192.168.1.12"),
 					},
 				},
 				AllowMMDS: true,
@@ -119,7 +121,7 @@ func getFcConfig(opts *Config) firecracker.Config {
 		MachineCfg: models.MachineConfiguration{
 			VcpuCount:  firecracker.Int64(1),
 			Smt:        firecracker.Bool(false),
-			MemSizeMib: firecracker.Int64(1024),
+			MemSizeMib: firecracker.Int64(opts.fcMemSz),
 		},
 
 		// Enable seccomp as recommended by firecracker-doc

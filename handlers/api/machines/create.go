@@ -30,6 +30,15 @@ func Create(machines core.MachineStore) http.HandlerFunc {
 			return
 		}
 
+		if !core.MatchName(in.Name) {
+			err := &Msg{
+				Message: "name must be alphanumeric",
+			}
+			log.Errorln(err)
+			render.JSON(w, err, http.StatusBadRequest)
+			return
+		}
+
 		m := &core.Machine{
 			Id:      rand.UUID(),
 			Name:    in.Name,

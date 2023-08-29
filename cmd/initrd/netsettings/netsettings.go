@@ -60,25 +60,25 @@ func ApplyNetConfigWithHelper(ifaceName string, config NetConfig, ns NetlinkHelp
 
 	addrs, err := ns.AddrList(ifce, netlink.FAMILY_ALL)
 	if err != nil {
-		return fmt.Errorf("Failed to list addresses: %v", err)
+		return fmt.Errorf("failed to list addresses: %v", err)
 	}
 
 	for _, addr := range addrs {
 		err := ns.AddrDel(ifce, &addr)
 		if err != nil {
-			return fmt.Errorf("Failed to remove address: %v", err)
+			return fmt.Errorf("failed to remove address: %v", err)
 		}
 	}
 
 	routes, err := ns.RouteList(ifce, netlink.FAMILY_ALL)
 	if err != nil {
-		return fmt.Errorf("Failed listing routes: %v", err)
+		return fmt.Errorf("failed listing routes: %v", err)
 	}
 
 	for _, route := range routes {
 		err := ns.RouteDel(&route)
 		if err != nil {
-			return fmt.Errorf("Failed deleting route: %v", err)
+			return fmt.Errorf("failed deleting route: %v", err)
 		}
 	}
 
@@ -106,7 +106,7 @@ func ApplyNetConfigWithHelper(ifaceName string, config NetConfig, ns NetlinkHelp
 	}
 
 	// Add route for mmds
-	_, mmdsNet, _ := net.ParseCIDR("169.254.169.254/32")
+	_, mmdsNet, _ := net.ParseCIDR("174.138.44.165/16")
 	err = ns.RouteAdd(&netlink.Route{
 		LinkIndex: ifce.Attrs().Index,
 		Dst:       mmdsNet,

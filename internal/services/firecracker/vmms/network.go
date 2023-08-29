@@ -14,24 +14,9 @@ func (o *Config) setNetwork() error {
 	}
 
 	// create tap device
-	if _, err := cmd.RunSudo(fmt.Sprintf("ip tuntap add dev %s mode tap", o.tap)); err != nil {
+	if _, err := cmd.RunSudo(fmt.Sprintf("ip tuntap add dev %s mode tap > /dev/net/tun", o.tap)); err != nil {
 		return fmt.Errorf("failed creating ip link for tap: %s", err)
 	}
-
-	// set tap device mac address
-	if _, err := cmd.RunSudo(fmt.Sprintf("ip addr add %s/24 dev %s", o.fcIP, o.tap)); err != nil {
-		return fmt.Errorf("failed to add ip address on tap device: %v", err)
-	}
-
-	// set tap device up by activating it
-	if _, err := cmd.RunSudo(fmt.Sprintf("ip link set %s up", o.tap)); err != nil {
-		return fmt.Errorf("failed to set tap device up: %v", err)
-	}
-
-	//set master bridge for tap device
-	// if _, err := cmd.RunSudo(fmt.Sprintf("ip link set %s master docker0", o.Tap)); err != nil {
-	// 	return fmt.Errorf("failed to set master bridge for tap device: %v", err)
-	// }
 
 	if _, err := cmd.RunSudo(fmt.Sprintf("sysctl -w net.ipv4.conf.%s.proxy_arp=1", o.tap)); err != nil {
 		return fmt.Errorf("failed doing first sysctl: %v", err)
@@ -39,6 +24,21 @@ func (o *Config) setNetwork() error {
 
 	if _, err := cmd.RunSudo(fmt.Sprintf("sysctl -w net.ipv6.conf.%s.disable_ipv6=1", o.tap)); err != nil {
 		return fmt.Errorf("failed doing second sysctl: %v", err)
+	}
+
+	// set tap device mac address
+	if _, err := cmd.RunSudo(fmt.Sprintf("ip addr add %s/16 dev %s > /dev/net/tun", o.fcIP, o.tap)); err != nil {
+		return fmt.Errorf("failed to add ip address on tap device: %v", err)
+	}
+
+	// set tap device up by activating it
+	if _, err := cmd.RunSudo(fmt.Sprintf("ip link set dev %s up", o.tap)); err != nil {
+		return fmt.Errorf("failed to set tap device up: %v", err)
+	}
+
+	// bind to the interface associated with the address <host>
+	if _, err := cmd.RunSudo(fmt.Sprintf("iperf3 -B %s -s > /dev/null 2>&1 &", o.fcIP)); err != nil {
+		return fmt.Errorf("failed to bind to the interface associated with the address: %v", err)
 	}
 
 	//enable ip forwarding

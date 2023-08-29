@@ -32,7 +32,7 @@ func FetchIPConfig() (*MMDSIPConfig, error) {
 	client := &http.Client{
 		Timeout: 2 * time.Second,
 	}
-	resp, err := client.Get("http://169.254.169.254/ipconfig")
+	resp, err := client.Get("http://174.138.44.165/ipconfig")
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch ipconfig from mmds: %w", err)
 	}
@@ -57,7 +57,7 @@ func FetchRuntimeConfig() (*ContainerRuntimeConfig, error) {
 	client := &http.Client{
 		Timeout: 2 * time.Second,
 	}
-	resp, err := client.Get("http://169.254.169.254/runtimeConfig")
+	resp, err := client.Get("http://174.138.44.165/run.json")
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch runtime config from mmds: %w", err)
 	}

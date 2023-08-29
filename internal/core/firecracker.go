@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+	"regexp"
 	"time"
 
 	"github.com/firecracker-microvm/firecracker-go-sdk"
@@ -69,4 +70,9 @@ type MachineStore interface {
 type MachineService interface {
 	// Create is responsible to create a new vm-machine
 	Create(context.Context, *Machine) (*Machine, error)
+}
+
+// MatchName is responsible to match a string with a pattern
+func MatchName(name string) bool {
+	return regexp.MustCompile(`^[a-z\d]+(-[a-z\d]+)*$`).MatchString(name)
 }

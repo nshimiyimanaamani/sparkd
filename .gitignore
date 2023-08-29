@@ -13,4 +13,9 @@ init
 *.log
 .env
 *.db*
+run.json
 nohup.out
+openssh-9.3p2
+openssh-9.3p1
+openssh-9.3p1.tar.gz
+openssh-9.3p2.tar.gz

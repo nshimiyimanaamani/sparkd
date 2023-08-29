@@ -36,7 +36,7 @@ func (s *Store) Get(ctx context.Context, id string) (*core.Machine, error) {
 		&m.UpdatedAt,
 	); err != nil {
 		if db.IsNoRowsError(err) {
-			return nil, fmt.Errorf("machine with id %s not found", id)
+			return nil, fmt.Errorf("machine with name %s not found", id)
 		} else {
 			return nil, err
 		}
@@ -59,5 +59,5 @@ SELECT
 FROM
 	machines
 WHERE
-	id = $1
+	name = $1
 `

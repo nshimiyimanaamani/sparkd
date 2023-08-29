@@ -19,12 +19,12 @@ import (
 // 7. delete the init base tar file
 // 8. delete the podman supplied tar file
 // 9. return the rootfs path or name
-func (o *Config) generateRFs(name string) (string, error) {
+func (o *Config) generateRFs(dir, name string) (string, error) {
 
 	fsName := fmt.Sprintf("%d-%s.ext4", o.vmIndex, name)
 
-	// for creating the rootfs directory with 526MB size
-	if _, err := cmd.RunNoneSudo(fmt.Sprintf("fallocate -l 526MB %s", fsName)); err != nil {
+	// for creating the rootfs directory with 1024MB size
+	if _, err := cmd.RunNoneSudo(fmt.Sprintf("dd if=/dev/zero of=%s bs=1 count=0 seek=1G", fsName)); err != nil {
 		return "", fmt.Errorf("failed to create rootfs file: %v", err)
 	}
 
@@ -34,7 +34,7 @@ func (o *Config) generateRFs(name string) (string, error) {
 	}
 
 	//creating a temporary directory for mounting the rootfs file
-	tmpDir, err := os.MkdirTemp("", fsName)
+	tmpDir, err := os.MkdirTemp(dir, fmt.Sprintf("%d-%s", o.vmIndex, name))
 	if err != nil {
 		return "", fmt.Errorf("failed to create temporary directory: %v", err)
 	}
@@ -51,25 +51,68 @@ func (o *Config) generateRFs(name string) (string, error) {
 	imageTar := fmt.Sprintf("%d-%s.tar", o.vmIndex, name)
 	imageName := fmt.Sprintf("%d-%s", o.vmIndex, name)
 
+	cmd.RunNoneSudo(fmt.Sprintf("podman rm -f %s > /dev/null | true", imageName))
+
 	// for exporting the podman tar file from supplied podman image
 	if _, err := cmd.RunNoneSudo(fmt.Sprintf("podman create --name %s %s", imageName, o.providedImage)); err != nil {
 		return "", fmt.Errorf("podman failed to create tar file: %v", err)
 	}
-	defer cmd.RunNoneSudo(fmt.Sprintf("podman rm -f %s", imageName))
+	defer cmd.RunNoneSudo(fmt.Sprintf("podman rm -f %s ", imageName))
+
+	// start temp imageName container
+	if _, err := cmd.RunNoneSudo(fmt.Sprintf("podman start %s", imageName)); err != nil {
+		return "", fmt.Errorf("podman failed to start container: %v", err)
+	}
+
+	// exectute update-get update in the container
+	if _, err := cmd.RunNoneSudo(fmt.Sprintf("podman exec -it %s apt update", imageName)); err != nil {
+		return "", fmt.Errorf("podman failed to update container: %v", err)
+	}
+
+	// Run the install net-tools for ifconfig inside the container
+	if _, err := cmd.RunNoneSudo(fmt.Sprintf("podman exec -it %s apt install net-tools", imageName)); err != nil {
+		return "", fmt.Errorf("podman failed to run setup ifconfig in container: %v", err)
+	}
+
+	// // Run the install iproute2 command for ip command inside the container
+	// if _, err := cmd.RunNoneSudo(fmt.Sprintf("podman exec -it %s apt install iproute2", imageName)); err != nil {
+	// 	return "", fmt.Errorf("podman failed to run setup ip cmd  in container: %v", err)
+	// }
+
+	// // exectute update-get update in the container
+	// if _, err := cmd.RunNoneSudo(fmt.Sprintf("podman exec -it %s apt update", imageName)); err != nil {
+	// 	return "", fmt.Errorf("podman failed to update container2: %v", err)
+	// }
+
+	// if _, err := cmd.RunSudo(fmt.Sprintf("podman exec -it %s ip tuntap add dev %s mode tap", imageName, o.tap)); err != nil {
+	// 	return "", fmt.Errorf("podman failed to run setup tap device: %v", err)
+	// }
+
+	fmt.Println("Networks", o.tapGateWay, o.tapMask)
+	// if _, err := cmd.RunNoneSudo(fmt.Sprintf("podman exec -it %s ifconfig %s %s netmask %s", imageName, o.tap, o.tapGateWay, o.tapMask)); err != nil {
+	// 	return "", fmt.Errorf("podman failed to run setup tap mask address: %v", err)
+	// }
+
+	//
+	cmd.RunNoneSudo(fmt.Sprintf("podman stop %s ", imageName))
 
 	// for exporting the podman tar file from supplied podman image
-	if _, err := cmd.RunNoneSudo(fmt.Sprintf("podman export %s -o %s%s", imageName, o.dir, imageTar)); err != nil {
+	if _, err := cmd.RunNoneSudo(fmt.Sprintf("podman export %s -o %s%s", imageName, dir, imageTar)); err != nil {
 		return "", fmt.Errorf("podman failed to export tar file: %v", err)
 	}
 
 	// for extracting the podman supplied tar file to the rootfs directory
-	if _, err := cmd.RunNoneSudo(fmt.Sprintf("tar -xvf %s%s -C %s", o.dir, imageTar, tmpDir)); err != nil {
+	if _, err := cmd.RunNoneSudo(fmt.Sprintf("tar -xvf %s%s -C %s", dir, imageTar, tmpDir)); err != nil {
 		return "", fmt.Errorf("failed to extract podman supplied tar file: %v", err)
 	}
 
 	// include our init process into ext4 file system exported from podman
-	if _, err := cmd.RunNoneSudo(fmt.Sprintf("cp -r %sinit %s", o.dir, tmpDir)); err != nil {
+	if _, err := cmd.RunNoneSudo(fmt.Sprintf("cp -r %sinit %s", dir, tmpDir)); err != nil {
 		return "", fmt.Errorf("failed to cp init to tmp dir: %v", err)
+	}
+
+	if _, err := cmd.RunNoneSudo(fmt.Sprintf("cp -r %srun.json %s", dir, tmpDir)); err != nil {
+		return "", fmt.Errorf("failed to cp run.json to tmp dir: %v", err)
 	}
 
 	//remove those created ext and tar files

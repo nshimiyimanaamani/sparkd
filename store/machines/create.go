@@ -36,7 +36,7 @@ func (s *Store) Create(ctx context.Context, m *core.Machine) (*core.Machine, err
 
 	// run background process to start vm with using goroutine and channel to handle context canceled.
 
-	cntx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	cntx, cancel := context.WithTimeout(ctx, 30*time.Minute)
 	defer cancel()
 
 	log := render.GetLogger(cntx)
@@ -49,6 +49,9 @@ func (s *Store) Create(ctx context.Context, m *core.Machine) (*core.Machine, err
 		}
 		resultChan <- err
 	}()
+
+	now := time.Now().UTC()
+	m.UpdatedAt = &now
 
 	select {
 	case <-cntx.Done():
