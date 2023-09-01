@@ -1,4 +1,4 @@
-module github.com/quarksgroup/sparkd
+module github.com/nshimiyimanaamani/sparkd
 
 go 1.20
 
